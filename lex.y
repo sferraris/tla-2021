@@ -8,11 +8,20 @@
 %token <ival> AND
 %token <ival> OR
 %token <ival> NOT
+%token <ival> PRINT
+%token <strval> STRING
+%token <strval> WHILE
+%token <ival> GE
+%token <ival> EQ
+%token <ival> LE
 %left '+' '-'
 %left '*' '/'
 %type <strval> expr
 %type <strval> conditional
 %type <strval> number
+%type <strval> expr_list
+
+
 %{
     #include <stdio.h>
     #include <stdlib.h>
@@ -29,15 +38,14 @@
 }
 %%
 statement:
-        | MAIN OPEN_DEL expr CLOSE_DEL {fprintf(yyout, "int main(){\n%s\n}", $<strval>3);} 
+        | MAIN OPEN_DEL expr_list CLOSE_DEL 
         ;
 expr:
     INTEGER {char aux[100];
         sprintf(aux, "%s", $<strval>1);
         $$=aux;
         }
-    | expr expr {char aux[10000];sprintf(aux ,"%s %s", $<strval>1, $<strval>2);$$=aux;}
-    | VARIABLE {checkVariable((char *)$1, first); }
+    | VARIABLE {checkVariable((char *)$1, first); char aux[100]; sprintf(aux, "%s", $<strval>1); $$=aux; }
     | expr '+' expr {char aux[100];sprintf(aux, "%s + %s", $<strval>1, $<strval>2);$$=aux;}
     | expr '-' expr {char aux[100];sprintf(aux, "%s - %s", $<strval>1, $<strval>2);$$=aux;}
     | expr '*' expr {char aux[100];sprintf(aux, "%s * %s", $<strval>1, $<strval>2);$$=aux;}
@@ -56,25 +64,39 @@ expr:
                 return -1; 
         }
         char aux[1000];
-        sprintf(aux, "%s %s = %s;\n",getType($<ival>1), $<strval>2, $<strval>4); $$=aux;
+        sprintf(aux, "%s %s = %s;\n",getType($<ival>1), $<strval>2, $<strval>4), $$=aux;;
         }
-    | IF '(' conditional ')' OPEN_DEL expr CLOSE_DEL {char aux[100];sprintf(aux, "if(%s){\n%s}\n", $<strval>3, $<strval>6);$$=aux;}
+    |IF {fprintf(yyout, "if(");}'(' conditional ')' {fprintf(yyout, "){\n");}  OPEN_DEL expr_list CLOSE_DEL {fprintf(yyout, "}\n");$$="";}
+    |PRINT '('  STRING ')' ';' {fprintf(yyout, "printf(%s);\n", $<strval>3);$$="";}
+    |WHILE  {fprintf(yyout, "while(");}'(' conditional ')'{fprintf(yyout, "){\n");}  OPEN_DEL expr_list CLOSE_DEL {fprintf(yyout, "}\n");$$="";}
     ;
+expr_list: expr  {fprintf(yyout, "%s",$<strval>1);}
+            |expr_list expr {char aux[100000];fprintf(yyout, "%s",$<strval>2);}
+            ;
+
+
+
 number:
-    INTEGER {char aux[100];sprintf(aux, "%s", $<strval>1);$$=aux;}
-    |VARIABLE {checkVariable((char *)$1, first);char aux[100]; sprintf(aux, "%s", $<strval>1);$$=aux; }
+    INTEGER {fprintf(yyout, "%s", $<strval>1);}
+    |VARIABLE {
+     if(!checkVariable((char *)$<strval>1, first)){
+                yyerror("Variable not defined");
+                return -1; 
+        }
+    char aux[100];fprintf(yyout, "%s", $<strval>1); }
     ;
 
 conditional:
-       number '<' number {char aux[100];sprintf(aux, "%s < %s", $<strval>1, $<strval>3); $$=aux;}
-    |   number "<=" number {char aux[100];sprintf(aux, "%s <= %s", $<strval>1, $<strval>3); $$=aux;}
-    |   number "==" number {char aux[100];sprintf(aux, "%s == %s", $<strval>1, $<strval>3); $$=aux;}
-    |   number '>' number {char aux[100];sprintf(aux, "%s > %s", $<strval>1, $<strval>3); $$=aux;}
-    |   number ">=" number {char aux[100];sprintf(aux, "%s >= %s", $<strval>1, $<strval>3); $$=aux;}
-    |   '!' number {char aux[100];sprintf(aux, "!%s", $<strval>2); $$=aux;}
-    |   conditional AND conditional {char aux[100];sprintf(aux, "%s && %s", $<strval>1, $<strval>3);$$=aux;}
-    |   conditional OR conditional {char aux[100];sprintf(aux, "%s || %s", $<strval>1, $<strval>3);$$=aux;}
-    |   NOT conditional {char aux[100];sprintf(aux, "!%s", $<strval>2);$$=aux;}
+        number 
+    |   number '<' {fprintf(yyout, " < ");} number 
+    |   number LE {fprintf(yyout, " <= ");} number 
+    |   number EQ {fprintf(yyout, " == ");} number
+    |   number '>' {fprintf(yyout, " > ");}number 
+    |   number GE {fprintf(yyout, " >= ");}number
+    |   conditional AND {fprintf(yyout, " && ");} conditional 
+    |   conditional OR {fprintf(yyout, " || ");} conditional 
+    |   NOT {fprintf(yyout, "! ");} conditional 
+    |   '('{fprintf(yyout, "(");} conditional ')'{fprintf(yyout, ")");}
     ;
 %%
 
@@ -91,9 +113,13 @@ int main(int argc, char ** argv) {
     yyin = fopen(argv[1], "r");
     yyout = fopen("output.c", "w");
     fprintf(yyout,"#include <stdio.h>\n");
-    if(yyparse()<0){
+    fprintf(yyout, "int main(){\n"); 
+    if(yyparse()!=0){
+        fclose(yyin);
+        fclose(yyout);
         return 0;
     }
+    fprintf(yyout, "}\n"); 
 
     fclose(yyin);
     fclose(yyout);

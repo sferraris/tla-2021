@@ -46,6 +46,8 @@ void yyerror(char *);
 "automaton "  {yylval.ival=AUTOMATON; return TYPE;}
 "alphabet " {yylval.ival=ALPHABET; return TYPE;}
 
+"print" {yylval.ival=0;return PRINT;}
+"while" {yylval.ival=0;return WHILE;}
 
 
 
@@ -56,8 +58,9 @@ void yyerror(char *);
 "&&" {yylval.ival=0;return AND;}
 "||" {yylval.ival=0;return OR;}
 "!" {yylval.ival=0;return NOT;}
-
-
+">=" { yylval.ival=0;return GE;}
+"==" { yylval.ival=0;return EQ;}
+"<=" { yylval.ival=0;return LE;}
 
 [a-z]+ {
     yylval.strval =strdup(yytext);
@@ -67,6 +70,12 @@ void yyerror(char *);
     yylval.strval = strdup(yytext);
     return INTEGER;
     }
+
+"\""[a-zA-Z0-9\\]+"\"" {
+    yylval.strval =strdup(yytext);
+    return STRING;
+}
+
 [-+()=*/><!] {
     return *yytext;
     }
