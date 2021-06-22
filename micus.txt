@@ -1,9 +1,12 @@
 main()
 {
-    int i=4;
-    i=5+i;
-    i=i*2;
-    i=0;
+    int i = 4;
     i=i+1;
-    i=i+2*5+9;
+    long rulito=1;
+    signed short int h  =     4;
+    signed         int m = 5; 
+    int mic=3;
+    if(i>3){
+        i = 5;
+    }
 }

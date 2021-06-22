@@ -1,7 +1,7 @@
 all:
-	yacc -d lex.y
-	flex lex.l 
-	gcc -o lex lex.yy.c y.tab.c -ly 
+	yacc -d lex.y 
+	flex lex.l  
+	gcc -o lex lex.yy.c y.tab.c lex.c -ly 
 	rm lex.yy.c y.tab.c y.tab.h
 clean:
 	rm lex
