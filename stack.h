@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define DEFAULT_STACK_SIZE 255
 
 // Data structure to represent a stack
 typedef struct
@@ -11,7 +12,7 @@ typedef struct
     int maxsize;    // define max capacity of the stack
     int top;
     int *items;
-    
+
 } stack;
  
 // Utility function to initialize the stack

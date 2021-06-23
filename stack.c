@@ -11,7 +11,18 @@ stack* newStack(int capacity)
  
     return pt;
 }
- 
+
+stack* grow_stack(stack *pt){
+    pt->items = (int*) realloc(pt, sizeof(int) * ( (ssize_t) pt->maxsize + DEFAULT_STACK_SIZE) );
+
+    if ( pt->items == NULL){
+        printf("Out of memory\n");
+        exit(EXIT_FAILURE);
+    }
+
+    pt->maxsize += DEFAULT_STACK_SIZE;
+}
+
 
 int size(stack *pt) {
     return pt->top + 1;
@@ -34,11 +45,9 @@ void push(stack *pt, int x)
     // lead to stack overflow
     if (isFull(pt))
     {
-        printf("Overflow\nProgram Terminated\n");
-        exit(EXIT_FAILURE);
+        grow_stack(pt);
     }
- 
-    printf("Inserting %d\n", x);
+
  
     // add an element and increment the top's index
     pt->items[++pt->top] = x;
@@ -70,3 +79,25 @@ int pop(stack *pt)
     return pt->items[pt->top--];
 }
  
+/*
+int main(void){
+    stack *pt = newStack(3);
+    push(pt, 1);
+    push(pt, 2);
+    push(pt, 3);
+    
+    printf("The maxsize is: %d\n", pt->maxsize);
+
+    for ( int i = 0; i < 3; i++){
+        printf("stack: %d\n", peek(pt));
+    }
+
+    push(pt, 4);
+    printf("Now the maxsize is: %d\n", pt->maxsize);
+
+    for ( int i = 0; i < 4; i++){
+        printf("stack: %d\n", peek(pt));
+    }
+    return 0;
+}
+*/
