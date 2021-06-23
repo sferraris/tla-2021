@@ -42,22 +42,25 @@ void yyerror(char *);
 "float "  {yylval.ival=FLOAT; return TYPE;}
 "double "  {yylval.ival=DOUBLE; return TYPE;}
 "long"[' ']+"double "  {yylval.ival=LONG_DOUBLE; return TYPE;}
-"states "  {yylval.ival=STATES; return TYPE;}
-"automaton "  {yylval.ival=AUTOMATON; return TYPE;}
-"alphabet " {yylval.ival=ALPHABET; return TYPE;}
+"states "  {yylval.ival=STATES; return SPECIAL_TYPE2;}
+"automaton "  {yylval.ival=AUTOMATON; return AUTOMATON_T;}
+"input_alphabet " {yylval.ival= INPUT_ALPHABET; return SPECIAL_TYPE;}
+"stack_alphabet " {yylval.ival= STACK_ALPHABET; return SPECIAL_TYPE2;}
+"string" {yylval.ival= STRING_TYPE; return STRING_T;}
 
 "print" {yylval.ival=0;return PRINT;}
-"while" {yylval.ival=0;return WHILE;}
+"while" {yylval.strval=0;return WHILE;}
+"new_automaton" {yylval.ival=0;return NA;}
 
 
 
 "if" {yylval.ival=0;return IF;}
 "AND" {yylval.ival=0;return AND;}
 "OR" {yylval.ival=0;return OR;}
-"NOT" {yylval.ival=0;return NOT;}
+"NOT" {yylval.strval=0;return NOT;}
 "&&" {yylval.ival=0;return AND;}
 "||" {yylval.ival=0;return OR;}
-"!" {yylval.ival=0;return NOT;}
+"!" {yylval.strval=0;return NOT;}
 ">=" { yylval.ival=0;return GE;}
 "==" { yylval.ival=0;return EQ;}
 "<=" { yylval.ival=0;return LE;}
@@ -76,7 +79,12 @@ void yyerror(char *);
     return STRING;
 }
 
-[-+()=*/><!] {
+"\'"[a-zA-Z0-9\\]"\'" {
+    yylval.strval =strdup(yytext);
+    return SIMPLE_STRING;
+}
+
+[-+()=*/><!,] {
     return *yytext;
     }
 [\n\r]    ;

@@ -34,7 +34,9 @@ enum types{
     LONG_DOUBLE, 
     STATES, 
     AUTOMATON, 
-    ALPHABET,
+    INPUT_ALPHABET,
+    STACK_ALPHABET,
+    STRING_TYPE
 };
 
 char * getType(enum types type);
@@ -46,6 +48,8 @@ struct variables{
 };
 
 int checkVariable(char * var, struct variables * first);
+
+int checkVariableWithType(char * var, struct variables * first, enum types type);
 
 int addVariable(char * var, enum types type, struct variables ** first);
 

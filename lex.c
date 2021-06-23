@@ -36,8 +36,9 @@ char * getType(enum types type){
     "long double", 
     "states", 
     "automaton", 
-    "alphabet"
-
+    "input_alphabet",
+    "stack_alphabet",
+    "string"
     };
 
     return types[type];
@@ -48,6 +49,16 @@ int checkVariable(char * var, struct variables * first){
     while(first != 0){
         if(strcmp(var, first->var) == 0){
             return 1;
+        }
+        first = first->next;
+    }
+    return 0;
+}
+
+int checkVariableWithType(char * var, struct variables * first, enum types type){
+    while(first != 0){
+        if(strcmp(var, first->var) == 0){
+            return first->type == type;
         }
         first = first->next;
     }

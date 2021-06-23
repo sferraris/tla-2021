@@ -9,5 +9,17 @@ main()
     if(i>3){
         i = 5;
     }
-    print("rulito\n");
+
+    states statess = {"q0", "q1","q2", "qf"};
+    input_alphabet inputalph = {'a', 'b', 'c'};
+    stack_alphabet stackalph = {"z", "A", "B"};
+    string iis = "q0";
+    states fis = {"qf"};
+    string is = "z";
+
+    int j = if( i > 0){
+        i = i + 1;
+    };
+
+    automaton auto =  new_automaton(statess, 4, inputalph, 3, stackalph, 3, iis, is, fis, 1);
 }
