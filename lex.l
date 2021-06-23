@@ -79,7 +79,7 @@ void yyerror(char *);
 [-+()=*/><!] {
     return *yytext;
     }
-[\n]    ;
+[\n\r]    ;
 [\t]   ;
 " "  ;
 ";"  return *yytext;

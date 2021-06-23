@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 make all
 ./lex $1
 if [ $? -gt 0 ]
