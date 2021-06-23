@@ -76,5 +76,8 @@ int is_state(automaton * automaton, string state);
 //Returns 1 if a word is in the automaton's final states list and 0 if it isn't
 int is_final_state(automaton * automaton, string state);
 
+//Cloase an opened automaton and free data structures
+void close(automaton * automaton);
+
 
 #endif

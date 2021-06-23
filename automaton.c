@@ -15,6 +15,8 @@ int get_input_state_index(automaton * automaton, string state);
 int get_stack_index(automaton * automaton, string stack);
 int get_transition(automaton * automaton, int current_state, int stack_top, char next_char);
 int execute(automaton * automaton, string input_string);
+void close(automaton * automaton);
+void end_iteration(automaton * automaton);
 
 int main(void){
 
@@ -486,8 +488,8 @@ int next(automaton * automaton){
     }
         
     if ( isEmpty(automaton->current_iteration->stack) && is_final_state(automaton, automaton->states[automaton->current_iteration->current_state]) && strlen(automaton->current_iteration->input_string) <= automaton->current_iteration->current_iteration_pointer){
-        automaton->started = 0;
         printf("The word belongs to the language\n");
+        end_iteration(automaton);
         return 1;
     }
 
@@ -534,3 +536,20 @@ int execute(automaton * automaton, string input_string){
     return 1;
 }
 
+void close(automaton * automaton){
+    free_automaton(automaton);
+}
+
+void end_iteration(automaton * automaton){
+    if ( automaton->started != 0){
+
+        free(automaton->current_iteration->stack->items);
+        free(automaton->current_iteration->stack);
+        free(automaton->current_iteration->input_string);
+        free(automaton->current_iteration);
+        automaton->started = 0;
+    }
+    else {
+        printf("There is no current iteration active\n");
+    }
+}
