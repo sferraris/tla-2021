@@ -4,7 +4,11 @@ void yyerror(char *);
  #include "y.tab.h"
  #include "lex.h"
  #include <string.h>
-%} 
+
+%}
+
+%option yylineno
+
 
 
 %%
@@ -26,6 +30,7 @@ void yyerror(char *);
 "input_alphabet " {yylval.ival= INPUT_ALPHABET; return SPECIAL_TYPE;}
 "stack_alphabet " {yylval.ival= STACK_ALPHABET; return SPECIAL_TYPE2;}
 "string" {yylval.ival= STRING_TYPE; return STRING_T;}
+"#define " {yylval.ival= DEFINE; return DEFINE_TYPE;}
 
 "print" {yylval.ival=0;return PRINT;}
 "while" {yylval.strval=0;return WHILE;}
@@ -37,6 +42,7 @@ void yyerror(char *);
 "next" {yylval.ival=0;return NX;}
 "is_finished" {yylval.ival=0;return ISF;}
 "print_aut" {yylval.ival = 0; return PA;}
+"print_extended_aut" {yylval.ival = 0; return PEA;}
 
 
 "if" {yylval.ival=0;return IF;}
@@ -57,9 +63,13 @@ void yyerror(char *);
     yylval.strval =strdup(yytext);
     return VARIABLE;
     }
-[0-9]+ {
+[A-Z]+ {
+yylval.strval =strdup(yytext);
+return DEF_VARIABLE;
+}
+[-]?[0-9]+([.][0-9]+)? {
     yylval.strval = strdup(yytext);
-    return INTEGER;
+    return INTEGER; 
     }
 
 "\""[ a-zA-Z0-9\\]*"\"" {

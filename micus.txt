@@ -1,12 +1,17 @@
+#define HOLA "holis"
+#define MICUS 3
+#define RULITO (3/2)
 main()
 {
     int i = 4;
     i=i+1;
-    long rulito=1;
-    int mic=3;
+    long rulito;
+    double dnum = -45.45;
+    int mic= 34;
     if(i>3){
         i = 5;
     }
+
 
     states statess = {"q0", "q1","q2", "qf"};
     input_alphabet inputalph = {'a', 'b', 'c'};
@@ -14,7 +19,8 @@ main()
     string inits = "q0";
     states fis = {"qf"};
     string fins = "z";
-    automaton at =  new_automaton(statess, 4, inputalph, 3, stackalph, 3, inits, fins, fis, 1);
+    fins = 3;
+    automaton at =  new_automaton(statess, 4, inputalph, 3, stackalph, 3, inits, fins, fis, 0);
 
     stack_alphabet replacement = {"z"};
 
@@ -34,22 +40,11 @@ main()
     int st = start(at, "abc");
     int nx = 0;
     int finished = 0;
-    while(finished != 1){
+    while(is_finished(at) != 1){
         nx = next(at);
-        finished = is_finished(at);
-        if(finished == 1){
-            print("termino\n");
-        }
-        if(finished != 1){
-            print("estoy\n");
-        }
+        
     }
-    if(finished == 1){
-            print("termino afuera\n");
-        }
-        if(finished != 1){
-            print("estoy afuer\n");
-        }
+   
     
 
     close(at);

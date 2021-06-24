@@ -15,7 +15,8 @@ enum types{
     AUTOMATON, 
     INPUT_ALPHABET,
     STACK_ALPHABET,
-    STRING_TYPE
+    STRING_TYPE,
+    DEFINE
 };
 
 char * getType(enum types type);
@@ -31,5 +32,7 @@ int checkVariable(char * var, struct variables * first);
 int checkVariableWithType(char * var, struct variables * first, enum types type);
 
 int addVariable(char * var, enum types type, struct variables ** first);
+
+int is_special_type(char * var, struct variables * first);
 
 #endif

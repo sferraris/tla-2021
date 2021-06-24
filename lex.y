@@ -24,30 +24,42 @@
 %token <ival> NX
 %token <ival> ISF
 %token <ival> PA
+%token <ival> PEA
 %token <ival> GE
 %token <ival> EQ
 %token <ival> LE
 %token <ival> NE
 %token <strval> LAMBDA2
+%token <strval> DEFINE_TYPE
+%token <strval> DEF_VARIABLE
 %left '+' '-'
 %left '*' '/'
 %type <strval> expr
+%type <strval> stmt
 %type <strval> conditional
 %type <strval> number
 %type <strval> number2
 %type <strval> string
-%type <strval> expr_list
+%type <strval> stmt_list
 %type <strval> simple_string_list
 %type <strval> string_list
+%type <strval> define_list
 %type <strval> char
+%type <strval> asignable_funcitons
+%type <strval> define
+%type <strval> value
+%type <strval> simple_expr
 %error-verbose
+%locations
+
 
 %{
     #include <stdio.h>
     #include <stdlib.h>
     #include "lex.h"
     #include "automaton.h"
-    void yyerror(char *);
+    void yyerror2(char * msg, char * word);
+    void yyerror(char * s);
     int yylex(void);
     int sym[26];
     char aux1[100];
@@ -56,6 +68,7 @@
     char aux4[100];
     extern FILE * yyin, * yyout;
     struct variables * first = 0;
+    extern int yylineno;
 %}
 %union {
     char*   strval;
@@ -63,7 +76,8 @@
 }
 %%
 statement:
-        | MAIN OPEN_DEL expr_list CLOSE_DEL 
+        | MAIN  {fprintf(yyout, "int main(){\n");}  OPEN_DEL stmt_list CLOSE_DEL 
+        | define_list MAIN { fprintf(yyout, "int main(){\n"); }OPEN_DEL stmt_list CLOSE_DEL 
         ;
 expr:
     INTEGER {char aux[100];
@@ -74,31 +88,98 @@ expr:
         sprintf(aux, "%s", $<strval>1);
         $$=aux;
         }
-    | VARIABLE {checkVariable((char *)$1, first); char aux[100]; sprintf(aux, "%s", $<strval>1); $$=aux; }
+    | VARIABLE {
+        if(!is_special_type((char *)$<strval>1, first)){
+                yyerror2("Variable is not defined or is not numeric", $<strval>1);
+                return -1; 
+        }
+        
+        char aux[100]; sprintf(aux, "%s", $<strval>1); $$=aux; }
     | expr '+' expr {char aux[100];sprintf(aux, "%s + %s", $<strval>1, $<strval>2);$$=aux;}
     | expr '-' expr {char aux[100];sprintf(aux, "%s - %s", $<strval>1, $<strval>2);$$=aux;}
     | expr '*' expr {char aux[100];sprintf(aux, "%s * %s", $<strval>1, $<strval>2);$$=aux;}
     | expr '/' expr {char aux[100];sprintf(aux, "%s / %s", $<strval>1, $<strval>2);$$=aux;}
-    | '(' expr ')' {char aux[100];sprintf(aux, "%s", $<strval>1);$$=aux;}
-    | VARIABLE '=' expr ';' {
-        if(!checkVariable((char *)$<strval>1, first)){
-                yyerror("Variable not defined");
+    | '(' expr ')' {char aux[100];sprintf(aux, "%s", $<strval>1);$$=aux;}  
+    | asignable_funcitons
+    ;
+
+asignable_funcitons:  AT '(' VARIABLE ',' string ',' string ',' string ',' VARIABLE ',' number2 ',' char ')'  {
+        if(!checkVariableWithType($<strval>3, first,AUTOMATON) && !checkVariableWithType($<strval>11, first, STACK_ALPHABET) ){
+            yyerror2("Variable not defined or of the wrong type", $$);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "add_transition(%s, %s, %s, %s, %s, %s, %s)", $<strval>3, $<strval>5, $<strval>7, $<strval>9,$<strval>11, $<strval>13, $<strval>15);
+        $$=aux;
+    }
+    | EX '(' VARIABLE ',' string ')' {
+        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "execute(%s, %s)", $<strval>3, $<strval>5);
+        $$=aux;
+    }
+    | ST '(' VARIABLE ',' string ')' {
+        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
+             yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "start(%s, %s)", $<strval>3, $<strval>5);
+        $$=aux;
+    }
+    | NX '(' VARIABLE ')' {
+        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "next(%s)", $<strval>3);
+        $$=aux;
+    }
+    | ISF '(' VARIABLE ')' {
+        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "is_finished(%s)", $<strval>3);
+        $$=aux;
+    }
+    ;
+
+
+
+stmt: VARIABLE '=' expr ';' {
+        if(!is_special_type((char *)$<strval>1, first)){
+                yyerror2("Variable is not defined or is not numeric", $<strval>1);
                 return -1; 
         }
         char aux[100];
         sprintf(aux, "%s = %s;\n", $<strval>1, $<strval>3); $$=aux;}
     | TYPE VARIABLE '=' expr ';' {
         if(!addVariable($<strval>2, $<ival>1, &first)){
-                yyerror("Variable was already defined in this scope");
+                yyerror2("Variable was already defined in this scope", $<strval>2);
                 return -1; 
         }
         char aux[1000];
         sprintf(aux, "%s %s = %s;\n",getType($<ival>1), $<strval>2, $<strval>4); $$=aux;
         }
+    | TYPE VARIABLE ';' {
+         if(!addVariable($<strval>2, $<ival>1, &first)){
+                yyerror2("Variable was already defined in this scope", $<strval>2);
+                return -1; 
+        }
+        char aux[1000];
+        sprintf(aux, "%s %s;\n",getType($<ival>1), $<strval>2); $$=aux;
+        
+    }
     | SPECIAL_TYPE VARIABLE '=' OPEN_DEL
     {
         if(!addVariable($<strval>2, $<ival>1, &first)){
-                yyerror("Variable was already defined in this scope");
+                yyerror2("Variable was already defined in this scope", $<strval>2);
                 return -1; 
         }
         fprintf(yyout, "char %s[] = { ",$<strval>2);
@@ -106,94 +187,59 @@ expr:
     | SPECIAL_TYPE2 VARIABLE '=' OPEN_DEL
     {
         if(!addVariable($<strval>2, $<ival>1, &first)){
-                yyerror("Variable was already defined in this scope");
+                yyerror2("Variable was already defined in this scope", $<strval>2);
                 return -1; 
         }
         fprintf(yyout, "string %s[] = { ",$<strval>2);
     } string_list CLOSE_DEL ';' { fprintf(yyout, " };\n");  $$ = "";}
     | STRING_T VARIABLE '=' STRING ';' {
         if(!addVariable($<strval>2, $<ival>1, &first)){
-                yyerror("Variable was already defined in this scope");
+                yyerror2("Variable was already defined in this scope", $<strval>2);
                 return -1; 
         }
         
         fprintf(yyout, "%s %s = %s;\n",getType($<ival>1), $<strval>2, $<strval>4); $$="";
         }
-    |IF {fprintf(yyout, "if(");}'(' conditional ')' {fprintf(yyout, "){\n");}  OPEN_DEL expr_list CLOSE_DEL {fprintf(yyout, "}\n");$$="";}
-    |PRINT '('  STRING ')' ';' {fprintf(yyout, "printf(%s);\n", $<strval>3);$$="";}
-    |WHILE  {fprintf(yyout, "while(");}'(' conditional ')'{fprintf(yyout, "){\n");}  OPEN_DEL expr_list CLOSE_DEL {fprintf(yyout, "}\n");$$="";}
+    | IF {fprintf(yyout, "if(");}'(' conditional ')' {fprintf(yyout, "){\n");}  OPEN_DEL stmt_list CLOSE_DEL {fprintf(yyout, "}\n");$$="";}
+    | PRINT '('  STRING ')' ';' {fprintf(yyout, "printf(%s);\n", $<strval>3);$$="";}
+    | WHILE  {fprintf(yyout, "while(");}'(' conditional ')'{fprintf(yyout, "){\n");}  OPEN_DEL stmt_list CLOSE_DEL {fprintf(yyout, "}\n");$$="";}
     | AUTOMATON_T VARIABLE '=' NA '('  VARIABLE ',' number2 ',' VARIABLE ',' number2  ',' VARIABLE ','  number2  ',' string ',' string ',' VARIABLE ',' number2 ')' ';'{
         if(!addVariable($<strval>2, $<ival>1, &first)){
-                yyerror("Variable was already defined in this scope"); 
+                yyerror2("Variable was already defined in this scope", $<strval>2); 
                 return -1; 
         }
          if(!checkVariableWithType((char *)$<strval>6, first, STATES) && !checkVariableWithType((char *)$<strval>10, first, STRING_TYPE) && !checkVariableWithType((char *)$<strval>14, first, STACK_ALPHABET) && !checkVariableWithType((char *)$<strval>22, first, STACK_ALPHABET) ){
-                yyerror("Variable not defined");
+                yyerror2("Variable not defined or of the wrong type", $$);
                 return -1; 
         }
         fprintf(yyout, "automaton * %s = new_automaton(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);\n", $<strval>2,$<strval>6, $<strval>8, $<strval>10,$<strval>12,$<strval>14,$<strval>16,$<strval>18,$<strval>20,$<strval>22,$<strval>24); $$ = "";
     }
-    |AT '(' VARIABLE ',' string ',' string ',' string ',' VARIABLE ',' number2 ',' char ')'  {
-        if(!checkVariableWithType($<strval>3, first,AUTOMATON) && !checkVariableWithType($<strval>11, first, STACK_ALPHABET) ){
-            yyerror("Variable not defined");
-            return -1; 
-        }
-        char aux[1024];
-        sprintf(aux, "add_transition(%s, %s, %s, %s, %s, %s, %s)", $<strval>3, $<strval>5, $<strval>7, $<strval>9,$<strval>11, $<strval>13, $<strval>15);
-        $$=aux;
-    }
-    |EX '(' VARIABLE ',' string ')' {
+    | CL '(' VARIABLE ')' ';' {
         if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
-            yyerror("Variable not defined");
-            return -1; 
-        }
-        char aux[1024];
-        sprintf(aux, "execute(%s, %s)", $<strval>3, $<strval>5);
-        $$=aux;
-    }
-    |CL '(' VARIABLE ')' ';' {
-        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
-            yyerror("Variable not defined");
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
             return -1; 
         }
         fprintf(yyout, "close(%s);\n", $<strval>3); $$="";
     }
-    |ST '(' VARIABLE ',' string ')' {
-        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
-            yyerror("Variable not defined");
-            return -1; 
-        }
-        char aux[1024];
-        sprintf(aux, "start(%s, %s)", $<strval>3, $<strval>5);
-        $$=aux;
-    }
-    |NX '(' VARIABLE ')' {
-        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
-            yyerror("Variable not defined");
-            return -1; 
-        }
-        char aux[1024];
-        sprintf(aux, "next(%s)", $<strval>3);
-        $$=aux;
-    }
-    |ISF '(' VARIABLE ')' {
-        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
-            yyerror("Variable not defined");
-            return -1; 
-        }
-        char aux[1024];
-        sprintf(aux, "is_finished(%s)", $<strval>3);
-        $$=aux;
-    }
     | PA '(' VARIABLE ')' ';' {
         if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
-            yyerror("Variable not defined");
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
             return -1; 
         }
         fprintf(yyout, "print_aut(%s);", $<strval>3);
         $$="";
     }
+    | PEA '(' VARIABLE ')' ';' {
+        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        fprintf(yyout, "print_extended_aut(%s);", $<strval>3);
+        $$="";
+    }
+    | asignable_funcitons ';' {fprintf(yyout, "%s;\n", $<strval>1);}
     ;
+
 
 simple_string_list: SIMPLE_STRING  {fprintf(yyout, "%s",$<strval>1);}
             | simple_string_list ',' SIMPLE_STRING {fprintf(yyout, " , %s",$<strval>3);}
@@ -204,24 +250,80 @@ string_list: STRING  {fprintf(yyout, "%s",$<strval>1);}
             | string_list ',' STRING {fprintf(yyout, " , %s",$<strval>3);}
             ;
 
-expr_list: expr  {fprintf(yyout, "%s",$<strval>1);}
-            |expr_list expr { fprintf(yyout, "%s",$<strval>2);}
+stmt_list: stmt  {fprintf(yyout, "%s",$<strval>1);}
+            |stmt_list stmt { fprintf(yyout, "%s",$<strval>2);}
             ;
+
+define: DEFINE_TYPE DEF_VARIABLE value {
+        if(!addVariable($<strval>2, $<ival>1, &first)){
+                yyerror2("Variable was already defined in this scope", $<strval>2);
+                return -1; 
+        }
+        char aux[100];
+        sprintf(aux, "#define %s %s", $<strval>2, $<strval>3);$$=aux;}
+       | DEFINE_TYPE DEF_VARIABLE '(' simple_expr ')' {
+            if(!addVariable($<strval>2, $<ival>1, &first)){
+                yyerror2("Variable was already defined in this scope", $<strval>2);
+                return -1; 
+            }
+            char aux[100];
+        sprintf(aux, "#define %s (%s)", $<strval>2, $<strval>4);
+        $$=aux;}
+;
+
+define_list: define {fprintf(yyout, "%s\n", $<strval>1);}
+            | define_list define {fprintf(yyout, "%s\n", $<strval>2);}
+;
+
+simple_expr:
+    INTEGER {char aux[100];
+        sprintf(aux, "%s", $<strval>1);
+        $$=aux;
+        }
+    | SIMPLE_STRING{char aux[100];
+        sprintf(aux, "%s", $<strval>1);
+        $$=aux;
+        }
+    | STRING {char aux[100];
+        sprintf(aux, "%s", $<strval>1);
+        $$=aux;
+        }
+    | expr '+' expr {char aux[100];sprintf(aux, "%s + %s", $<strval>1, $<strval>2);$$=aux;}
+    | expr '-' expr {char aux[100];sprintf(aux, "%s - %s", $<strval>1, $<strval>2);$$=aux;}
+    | expr '*' expr {char aux[100];sprintf(aux, "%s * %s", $<strval>1, $<strval>2);$$=aux;}
+    | expr '/' expr {char aux[100];sprintf(aux, "%s / %s", $<strval>1, $<strval>2);$$=aux;}
+    | '(' expr ')' {char aux[100];sprintf(aux, "%s", $<strval>1);$$=aux;}  
+    ;
+value:  INTEGER {char aux[100];
+        sprintf(aux, "%s", $<strval>1);
+        $$=aux;
+        }
+    | SIMPLE_STRING{char aux[100];
+        sprintf(aux, "%s", $<strval>1);
+        $$=aux;
+        }
+    | STRING {char aux[100];
+        sprintf(aux, "%s", $<strval>1);
+        $$=aux;
+        }
+    ;
+
 
 number:
     INTEGER {fprintf(yyout, "%s", $<strval>1);}
     |VARIABLE {
-     if(!checkVariable((char *)$<strval>1, first)){
-                yyerror("Variable not defined");
+     if(!is_special_type((char *)$<strval>1, first)){
+                yyerror2("Variable is not defined or is not numeric", $<strval>1);
                 return -1; 
         }
     fprintf(yyout, "%s", $<strval>1); }
+    | asignable_funcitons {fprintf(yyout, "%s", $<strval>1);}
     ;
 number2:
     INTEGER 
     |VARIABLE  {
-     if(!checkVariable((char *)$<strval>1, first)){ //TODO ver que la variable sea un integer
-                yyerror("Variable not defined");
+      if(!is_special_type((char *)$<strval>1, first)){
+                yyerror2("Variable is not defined or is not numeric", $<strval>1);
                 return -1; 
         }
     }
@@ -230,8 +332,8 @@ number2:
 string:
     STRING 
     |VARIABLE  {
-     if(!checkVariable((char *)$<strval>1, first)){ //TODO ver que la variable sea string
-                yyerror("Variable not defined");
+     if(!checkVariableWithType((char *)$<strval>1, first, STRING)){
+                yyerror2("Variable not defined or of the wrong type", $<strval>1);
                 return -1; 
         }
     }
@@ -239,8 +341,8 @@ string:
 char:
     SIMPLE_STRING 
     |VARIABLE {
-     if(!checkVariable((char *)$<strval>1, first)){ //TODO ver que la variable se char. Tendria que aceptar integer tambien? 
-                yyerror("Variable not defined");
+     if(!checkVariableWithType((char *)$<strval>1, first, CHAR)){ //Tendria que aceptar integer tambien? 
+                yyerror2("Variable not defined or of the wrong type", $<strval>1);
                 return -1; 
         }
     }
@@ -261,9 +363,13 @@ conditional:
     ;
 %%
 
-void yyerror(char *s) { 
-    fprintf(stderr, "%s\n", s); 
+void yyerror2(char * msg, char * word ) { 
+    fprintf(stderr, "\033[1m\033[31m%s in line: %d \n%s\n\n\033[0m", msg, yylineno, word); 
 }
+void yyerror(char * s) { 
+    fprintf(stderr, "%s in line: %d \n\n", s, yylineno); 
+}
+
 
 
 int main(int argc, char ** argv) {
@@ -275,7 +381,6 @@ int main(int argc, char ** argv) {
     yyout = fopen("output.c", "w");
     fprintf(yyout,"#include <stdio.h>\n");
     fprintf(yyout,"#include \"automaton.h\"\n");
-    fprintf(yyout, "int main(){\n"); 
     if(yyparse()!=0){
         fclose(yyin);
         fclose(yyout);

@@ -17,7 +17,8 @@ char * getType(enum types type){
     "automaton", 
     "input_alphabet",
     "stack_alphabet",
-    "string"
+    "string",
+    "#define"
     };
 
     return types[type];
@@ -73,4 +74,18 @@ int addVariable(char * var, enum types type,  struct variables ** first){
 
 
     return 1;
+}
+
+int is_special_type(char * var, struct variables * first){
+    while(first != 0){
+        if(strcmp(var, first->var) == 0){
+            if(first->type >= STATES){
+                return 0;
+            }
+            return 1;
+        }
+        first = first->next;
+    }
+    return 0;
+
 }
