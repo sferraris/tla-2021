@@ -18,9 +18,13 @@ int execute(automaton * automaton, string input_string);
 void close(automaton * automaton);
 void end_iteration(automaton * automaton);
 int is_finished(automaton * automaton);
+void print_current_state(automaton * a);
+void print_extended_aut(automaton * a);
 
 /*
 int main(void){
+
+    
 
     string states[] = {"q0", "q1","q2", "qf"};
     char input_alph[] = {'a', 'b', 'c'};
@@ -69,7 +73,8 @@ int main(void){
         printf("The word does not belong\n");
 
     free_automaton(aut);
-    aut = NULL;
+    aut = NULL; 
+    
  
     int i = 4;
 i = i + i;
@@ -84,29 +89,30 @@ string stackalph[] = { "z" , "A" , "B" };
 string inits = "q0";
 string fis[] = { "qf" };
 string fins = "z";
-automaton * at = new_automaton(statess, 4, inputalph, 3, stackalph, 3, inits, fins, fis, 1);
+automaton * at = new_automaton(statess, 4, inputalph, 3, stackalph, 3, inits, fins, fis, 0);
 string replacement[] = { "z" };
 int t = add_transition(at, "q0", "q1", "z", replacement, 1, 'a');
 string replacementt[] = { LAMBDA };
 t = add_transition(at, "q1", "qf", "z", replacementt, 1, 'b');
+print_aut(at);
 int exec = execute(at, "ab");
 if(exec == 1){
 printf("holis hola\n");
 }
+
 i = 5;
 int st = start(at, "abc");
+if ( st == 0)
+    printf("Error del start\n");
 int nx = 0;
 int finished = 0;
+print_extended_aut(at);
 while(finished != 1){
 nx = next(at);
 finished = is_finished(at);
-if(finished == 1){
-printf("termino\n");
 }
-if(finished != 1){
-printf("estoy\n");
-}
-}
+
+
 if(finished == 1){
 printf("termino afuera\n");
 }
@@ -120,10 +126,25 @@ close(at);
 
 automaton * new_automaton(string * states, int states_size, char * input_alphabet, int input_alphabet_size, string * stack_alphabet, int stack_alphabet_size, string initial_input_state, string initial_stack, string * final_states, int final_states_size){
     
+    if ( states_size == 0){
+        printf("An automaton can't have no states\n");
+        return NULL;
+    }
+
+    if ( input_alphabet_size == 0){
+        printf("An automaton can't have input alphabet\n");
+        return NULL;
+    }
+
+    if ( stack_alphabet_size == 0){
+        printf("An automaton can't have no stack alphabet\n");
+        return NULL;
+    }
+        
     automaton * a = init_automaton(states, states_size, input_alphabet, input_alphabet_size, stack_alphabet, stack_alphabet_size, initial_input_state, initial_stack, final_states, final_states_size);    
     if (a == NULL){
         printf("Error initializing automaton\n");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
 
     //TODO not neccesary
@@ -183,10 +204,15 @@ int add_transition(automaton * automaton, string state_from, string state_to, st
         return 0;
     }
 
-    t->stack_condition = get_stack_index(automaton, stack_condition);
-    if ( t->stack_condition == -1){
-        printf("%s is not in the stack alphabet\n", stack_condition);
+    if ( stack_condition != LAMBDA){
+        t->stack_condition = get_stack_index(automaton, stack_condition);
+        if ( t->stack_condition == -1){
+            printf("%s is not in the stack alphabet\n", stack_condition);
+        }
     }
+    else
+        t->stack_condition = LAMBDA_INDEX;
+    
 
     t->stack_replacement = malloc(sizeof(int) * stack_replacement_size);
     if ( t->stack_replacement == NULL){
@@ -406,20 +432,31 @@ void free_automaton(automaton * a){
 }
 
 void print_aut(automaton * a){
-    printf("Alfabeto: ");
-    for( int i = 0; i < a->input_alphabet_size; i++)
-        printf("%c ", a->input_alphabet[i]);
-    putchar('\n');
+    /*
+    printf("Input Alphabet = { ");
+    for( int i = 0; i < a->input_alphabet_size; i++){
+        printf("'%c'", a->input_alphabet[i]);
+        if ( i < a->input_alphabet_size - 1)
+            printf(", ");
+    }
+    printf(" }\n");
 
-    printf("Alfabeto del stack: ");
-    for( int i = 0; i < a->stack_alphabet_size; i++)
-        printf("%s ", a->stack_alphabet[i]);
-    putchar('\n');
+    printf("Stack alphabet = { ");
+    for( int i = 0; i < a->stack_alphabet_size; i++){
+        printf("'%s'", a->stack_alphabet[i]);
+        if ( i < a->stack_alphabet_size - 1)
+            printf(", ");
+    }
+    printf(" }\n");
 
-    printf("Estados: ");
-    for( int i = 0; i < a->states_size; i++)
-        printf("%s ", a->states[i]);
-    putchar('\n');
+    printf("States = { ");
+    for( int i = 0; i < a->states_size; i++){
+        printf("'%s'", a->states[i]);
+        if ( i < a->states_size - 1)
+            printf(", ");
+    }
+        
+    printf(" }\n");
 
     printf("Estados finales: ");
     for( int i = 0; i < a->final_states_size; i++)
@@ -430,14 +467,106 @@ void print_aut(automaton * a){
 
     printf("stack inicial: %s\n", a->stack_alphabet[a->initial_stack]);
 
-    printf("Transiciones:\n");
+    printf("Transitions:\n");
     for ( int i = 0; i < a->transition_size; i++){
-        printf("Transicion %d: from->%s, to->%s, when->%c top->%s, replacement->", i, a->states[a->transition[i]->state_from], a->states[a->transition[i]->state_to],( (a->transition[i]->c == LAMBDA_INDEX)? 'L' : a->transition[i]->c ), a->stack_alphabet[a->transition[i]->stack_condition]);
+        printf("%d. %s➔%s\t%c, %s|", i + 1, a->states[a->transition[i]->state_from], a->states[a->transition[i]->state_to],( (a->transition[i]->c == LAMBDA_INDEX)? 'L' : a->transition[i]->c ), a->stack_alphabet[a->transition[i]->stack_condition]);
         for ( int j = 0; j < a->transition[i]->stack_replacement_size; j++)
-            printf("%s, ", (a->transition[i]->stack_replacement[j] == LAMBDA_INDEX)? "Lambda" : a->stack_alphabet[a->transition[i]->stack_replacement[j]] );
+            printf("%s", (a->transition[i]->stack_replacement[j] == LAMBDA_INDEX)? "Lambda" : a->stack_alphabet[a->transition[i]->stack_replacement[j]] );
         putchar('\n');
     }
+    */
+    printf("M = < ");
+    //Print States
+    printf("{");
+        for( int i = 0; i < a->states_size; i++){
+            printf("%s", a->states[i]);
+            if ( i < a->states_size - 1)
+                printf(",");
+        }        
+    printf("}, ");
 
+    //Print Input Alphabet
+    printf("{");
+    for( int i = 0; i < a->input_alphabet_size; i++){
+        printf("%c", a->input_alphabet[i]);
+        if ( i < a->input_alphabet_size - 1)
+            printf(",");
+    }
+    printf("}, ");
+
+    //Print Stack Alphabet
+    printf("{");
+    for( int i = 0; i < a->stack_alphabet_size; i++){
+        printf("%s", a->stack_alphabet[i]);
+        if ( i < a->stack_alphabet_size - 1)
+            printf(",");
+    }
+    printf("}, ");
+    
+    //Print Transition Symbol
+    printf("𝛿, ");
+
+    //Print Initial State
+    printf("%s, ", a->states[a->initial_input_state]);
+
+    //Print Initial Stack Symbol
+    printf("%s, ", a->stack_alphabet[a->initial_stack]);
+
+    //Print final states
+    if ( a->final_states_size != 0){
+        printf("{");
+        for( int i = 0; i < a->final_states_size; i++){
+            printf("%s", a->states[a->final_states[i]]);
+            if ( i < a->final_states_size - 1)
+                printf(",");
+        }
+        printf("}");
+    }
+    else
+        printf("∅");
+
+    printf(" >\n\n");
+    
+
+
+    printf("𝛿:\n");
+    for ( int i = 0; i < a->transition_size; i++){
+        char aux[2];
+        sprintf(aux, "%c", a->transition[i]->c);
+        printf("%d. %s➔%s\t%s, %s|", i + 1, a->states[a->transition[i]->state_from], a->states[a->transition[i]->state_to],( (a->transition[i]->c == LAMBDA_INDEX)? "λ" : aux ), a->stack_alphabet[a->transition[i]->stack_condition]);
+        for ( int j = 0; j < a->transition[i]->stack_replacement_size; j++)
+            printf("%s", (a->transition[i]->stack_replacement[j] == LAMBDA_INDEX)? "λ" : a->stack_alphabet[a->transition[i]->stack_replacement[j]] );
+        putchar('\n');
+    }
+    putchar('\n');
+
+}
+
+void print_extended_aut(automaton * a){
+    printf("A Pulldown Automaton is defined as:\n\n");
+    printf("M = < Κ,Σ,Γ,𝛿,q0,z0,F >\n\n");
+    printf("Where:\n");
+    printf("Κ\t--> States Set of the Automaton\n");
+    printf("Σ\t--> Input Alphabet of the Automaton\n");
+    printf("Γ\t--> Stack Alphabet of the Automaton\n");
+    printf("𝛿\t--> Transition Function of the Automaton\n");
+    printf("q0\t--> Initial State of the Autmaton\n");
+    printf("z0\t--> Initial Configuration of the Stack\n");
+    printf("F\t--> Final States Set of the Automaton\n");
+    putchar('\n');
+    print_aut(a);
+}
+
+void print_current_state(automaton * a){
+    if ( a->started != 0){
+        int stack_top = LAMBDA;
+        if ( !isEmpty(a->current_iteration->stack))
+            stack_top = peek(a->current_iteration->stack);
+        printf("Current state: %s\tStack top: %s\tRemaining word: %s\n", a->states[a->current_iteration->current_state], (stack_top == LAMBDA)? "λ" : a->stack_alphabet[stack_top], ( (a->current_iteration->input_string[a->current_iteration->current_iteration_pointer] == LAMBDA)? "λ" : a->current_iteration->input_string + a->current_iteration->current_iteration_pointer ) );
+    }
+    else{
+        printf("No iteration started for this automaton\n");
+    }
 }
 
 int validate_transition(automaton * a, transition * t){
@@ -519,15 +648,21 @@ int next(automaton * automaton){
         return -1;
     }
 
+
     int current_state = automaton->current_iteration->current_state;
     char next_char;
     if ( automaton->current_iteration->current_iteration_pointer < strlen(automaton->current_iteration->input_string))
         next_char = automaton->current_iteration->input_string[automaton->current_iteration->current_iteration_pointer];
     else
         next_char =LAMBDA_INDEX;
-    int stack_top = peek(automaton->current_iteration->stack);
 
-   // printf("char: %c\n", (next_char == LAMBDA_INDEX)? 'L' : next_char);
+    int stack_top;
+    if ( !isEmpty(automaton->current_iteration->stack) )
+        stack_top = peek(automaton->current_iteration->stack);
+    else
+        stack_top = LAMBDA_INDEX;
+
+    print_current_state(automaton);
     int transition = get_transition(automaton, current_state, stack_top, next_char);
     if ( transition == -1){
         printf("No transition available, word does not belong to the language \n");
@@ -544,10 +679,15 @@ int next(automaton * automaton){
             push(automaton->current_iteration->stack, automaton->transition[transition]->stack_replacement[i]);
     }
 
-    printf("strlen = %lu\npointer = %d\n", strlen(automaton->current_iteration->input_string),automaton->current_iteration->current_iteration_pointer);
+    //printf("strlen = %lu\npointer = %d\n", strlen(automaton->current_iteration->input_string),automaton->current_iteration->current_iteration_pointer);
         
-    if ( isEmpty(automaton->current_iteration->stack) && is_final_state(automaton, automaton->states[automaton->current_iteration->current_state]) && strlen(automaton->current_iteration->input_string) <= automaton->current_iteration->current_iteration_pointer){
-        printf("The word belongs to the language\n");
+    if ( strlen(automaton->current_iteration->input_string) <= automaton->current_iteration->current_iteration_pointer && automaton->final_states_size == 0 && isEmpty(automaton->current_iteration->stack)){
+        printf("The word belongs to the language, automaton finished because of Empty Stack\n");
+        end_iteration(automaton);
+        return 1;
+    }
+    else if ( strlen(automaton->current_iteration->input_string) <= automaton->current_iteration->current_iteration_pointer && is_final_state(automaton, automaton->states[automaton->current_iteration->current_state]) ){
+        printf("The word belongs to the language, automaton finished because it reached a Final State\n");
         end_iteration(automaton);
         return 1;
     }

@@ -73,5 +73,11 @@ int is_finished(automaton * automaton);
 //Prints the entire information of the automaton
 void print_aut(automaton * a);
 
+//Prints the explanation of the automaton and its entire information
+void print_extended_aut(automaton * a);
+
+//Prints the current Iteration state
+void print_current_state(automaton * a);
+
 
 #endif
