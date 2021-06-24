@@ -21,6 +21,7 @@ stack* grow_stack(stack *pt){
     }
 
     pt->maxsize += DEFAULT_STACK_SIZE;
+    return pt;
 }
 
 

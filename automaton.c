@@ -17,7 +17,9 @@ int get_transition(automaton * automaton, int current_state, int stack_top, char
 int execute(automaton * automaton, string input_string);
 void close(automaton * automaton);
 void end_iteration(automaton * automaton);
+int is_finished(automaton * automaton);
 
+/*
 int main(void){
 
     string states[] = {"q0", "q1","q2", "qf"};
@@ -69,9 +71,52 @@ int main(void){
     free_automaton(aut);
     aut = NULL;
  
-
+    int i = 4;
+i = i + i;
+long rulito = 1;
+int mic = 3;
+if(i > 3){
+i = 5;
+}
+string statess[] = { "q0" , "q1" , "q2" , "qf" };
+char inputalph[] = { 'a' , 'b' , 'c' };
+string stackalph[] = { "z" , "A" , "B" };
+string inits = "q0";
+string fis[] = { "qf" };
+string fins = "z";
+automaton * at = new_automaton(statess, 4, inputalph, 3, stackalph, 3, inits, fins, fis, 1);
+string replacement[] = { "z" };
+int t = add_transition(at, "q0", "q1", "z", replacement, 1, 'a');
+string replacementt[] = { LAMBDA };
+t = add_transition(at, "q1", "qf", "z", replacementt, 1, 'b');
+int exec = execute(at, "ab");
+if(exec == 1){
+printf("holis hola\n");
+}
+i = 5;
+int st = start(at, "abc");
+int nx = 0;
+int finished = 0;
+while(finished != 1){
+nx = next(at);
+finished = is_finished(at);
+if(finished == 1){
+printf("termino\n");
+}
+if(finished != 1){
+printf("estoy\n");
+}
+}
+if(finished == 1){
+printf("termino afuera\n");
+}
+if(finished != 1){
+printf("estoy afuer\n");
+}
+close(at);  
     return 0;
 }
+*/
 
 automaton * new_automaton(string * states, int states_size, char * input_alphabet, int input_alphabet_size, string * stack_alphabet, int stack_alphabet_size, string initial_input_state, string initial_stack, string * final_states, int final_states_size){
     
@@ -221,6 +266,7 @@ int is_final_state(automaton * automaton, string state){
 automaton * init_automaton(string * states, int states_size, char * input_alphabet, int input_alphabet_size, string * stack_alphabet, int stack_alphabet_size, string initial_input_state, string initial_stack, string * final_states, int final_states_size){
     automaton * a = malloc(sizeof(automaton));
     if (a == NULL){
+        printf("error in malloc\n");
         return NULL;
     }
 
@@ -236,6 +282,7 @@ automaton * init_automaton(string * states, int states_size, char * input_alphab
     a->stack_alphabet = malloc(sizeof(string) * stack_alphabet_size);
     if ( a->stack_alphabet == NULL){
         free_automaton(a);
+        printf("stack alphabet is null\n");
         return NULL;
     }
     for ( int i = 0; i < stack_alphabet_size; i++){
@@ -243,6 +290,7 @@ automaton * init_automaton(string * states, int states_size, char * input_alphab
         a->stack_alphabet[i] = malloc(aux);
         if ( a->stack_alphabet[i] == NULL){
             free_automaton(a);
+            printf("stack alphabet element is null\n");
             return NULL;
         }
         strcpy(a->stack_alphabet[i], stack_alphabet[i]);
@@ -253,12 +301,14 @@ automaton * init_automaton(string * states, int states_size, char * input_alphab
     a->states = malloc(sizeof(string) * states_size);
     if ( a->states == NULL){
         free_automaton(a);
+        printf("states is null\n");
         return NULL;
     }
     for ( int i = 0; i < states_size; i++){
         int aux = strlen(states[i]);
         a->states[i] = malloc(aux);
         if ( a->states[i] == NULL){
+            printf("states element is null\n");
             free_automaton(a);
             return NULL;
         }
@@ -269,12 +319,15 @@ automaton * init_automaton(string * states, int states_size, char * input_alphab
     a->final_states_size = final_states_size;
     a->final_states = malloc(sizeof(int) * final_states_size);
     if ( a->final_states == NULL){
+        printf("final state is null\n");
         free_automaton(a);
         return NULL;
     }
     for ( int i = 0; i < final_states_size; i++){
         a->final_states[i] = get_input_state_index(a, final_states[i]);
         if ( a->final_states[i] == -1){
+            printf("final state element is not a state : %d %s\n", i, final_states[i]);
+            print_aut(a);
             free_automaton(a);
             return NULL;
         }
@@ -284,12 +337,15 @@ automaton * init_automaton(string * states, int states_size, char * input_alphab
     a->initial_input_state = get_input_state_index(a, initial_input_state);
     if ( a->initial_input_state == -1){
         free_automaton(a);
+        printf("initial state is not a state\n");
+        print_aut(a);
         return NULL;
     }
 
     a->initial_stack = get_stack_index(a, initial_stack);
     if ( a->initial_stack == -1){
         free_automaton(a);
+        printf("initial stack is not in stack alphabet\n");
         return NULL;
     }
 
@@ -471,10 +527,11 @@ int next(automaton * automaton){
         next_char =LAMBDA_INDEX;
     int stack_top = peek(automaton->current_iteration->stack);
 
-    //printf("char: %c\n", (next_char == LAMBDA_INDEX)? 'L' : next_char);
+   // printf("char: %c\n", (next_char == LAMBDA_INDEX)? 'L' : next_char);
     int transition = get_transition(automaton, current_state, stack_top, next_char);
     if ( transition == -1){
-        printf("No transition available, word does not belong to the language\n");
+        printf("No transition available, word does not belong to the language \n");
+        end_iteration(automaton);
         return -1;
     }
 
@@ -486,6 +543,8 @@ int next(automaton * automaton){
         if ( automaton->transition[transition]->stack_replacement[i] != LAMBDA_INDEX)
             push(automaton->current_iteration->stack, automaton->transition[transition]->stack_replacement[i]);
     }
+
+    printf("strlen = %lu\npointer = %d\n", strlen(automaton->current_iteration->input_string),automaton->current_iteration->current_iteration_pointer);
         
     if ( isEmpty(automaton->current_iteration->stack) && is_final_state(automaton, automaton->states[automaton->current_iteration->current_state]) && strlen(automaton->current_iteration->input_string) <= automaton->current_iteration->current_iteration_pointer){
         printf("The word belongs to the language\n");
@@ -552,4 +611,8 @@ void end_iteration(automaton * automaton){
     else {
         printf("There is no current iteration active\n");
     }
+}
+
+int is_finished(automaton * automaton){
+    return (automaton->started == 0)? 1 : 0;
 }

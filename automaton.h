@@ -1,7 +1,7 @@
 #ifndef AUTOMATON_H
 #define AUTOMATON_H
 
-#include "strings.h"
+#include "lib.h"
 #include "stack.h"
 
 #define LAMBDA 0
@@ -64,20 +64,14 @@ int start(automaton * automaton, string input_string);
 //Next element of the automaton iteration, returns 0 on error, 1 on success
 int next(automaton * automaton);
 
-//Returns 1 if a word is in the automaton's input alphabet and 0 if it isn't
-int is_input_alphabet(automaton * automaton, char c);
-
-//Returns 1 if a word is in the automaton's stack alphabet and 0 if it isn't
-int is_stack_alphabet(automaton * automaton, string word);
-
-//Returns 1 if a word is in the automaton's states list and 0 if it isn't
-int is_state(automaton * automaton, string state);
-
-//Returns 1 if a word is in the automaton's final states list and 0 if it isn't
-int is_final_state(automaton * automaton, string state);
-
 //Cloase an opened automaton and free data structures
 void close(automaton * automaton);
+
+//Returns 1 if iteration finished, 0 if not
+int is_finished(automaton * automaton);
+
+//Prints the entire information of the automaton
+void print_aut(automaton * a);
 
 
 #endif
