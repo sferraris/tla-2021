@@ -24,8 +24,6 @@ void print_extended_aut(automaton * a);
 /*
 int main(void){
 
-    
-
     string states[] = {"q0", "q1","q2", "qf"};
     char input_alph[] = {'a', 'b', 'c'};
     string stack_alph[] = {"z", "A", "B"};
@@ -132,7 +130,7 @@ automaton * new_automaton(string * states, int states_size, char * input_alphabe
     }
 
     if ( input_alphabet_size == 0){
-        printf("An automaton can't have input alphabet\n");
+        printf("An automaton can't have no input alphabet\n");
         return NULL;
     }
 
@@ -195,12 +193,14 @@ int add_transition(automaton * automaton, string state_from, string state_to, st
     t->state_from = get_input_state_index(automaton, state_from);
     if ( t->state_from == -1){
         printf("%s is not a state\n", state_from);
+        free(t);
         return 0;
     }
 
     t->state_to = get_input_state_index(automaton, state_to);
     if ( t->state_to == -1 ){
         printf("%s is not a state\n", state_to);
+        free(t);
         return 0;
     }
 
@@ -208,6 +208,8 @@ int add_transition(automaton * automaton, string state_from, string state_to, st
         t->stack_condition = get_stack_index(automaton, stack_condition);
         if ( t->stack_condition == -1){
             printf("%s is not in the stack alphabet\n", stack_condition);
+            free(t);
+            return 0;
         }
     }
     else
@@ -217,6 +219,7 @@ int add_transition(automaton * automaton, string state_from, string state_to, st
     t->stack_replacement = malloc(sizeof(int) * stack_replacement_size);
     if ( t->stack_replacement == NULL){
         printf("Error while adding transition, out of memory\n");
+        free(t);
         return 0;
     }
 
@@ -225,6 +228,7 @@ int add_transition(automaton * automaton, string state_from, string state_to, st
             t->stack_replacement[i] = get_stack_index(automaton, stack_replacement[i]);
             if ( t->stack_replacement[i] == -1){
                 printf("Error while adding transition\n");
+                free(t);
                 return 0;
             }
         }
@@ -244,12 +248,14 @@ int add_transition(automaton * automaton, string state_from, string state_to, st
         automaton->transition = realloc(automaton->transition, sizeof(transition **) * automaton->transition_size);
         if ( automaton->transition == NULL){
             printf("Realloc failed\n");
+            free(t);
             return 0;
         }
         automaton->transition[automaton->transition_size - 1] = t;
     }
     else{
-        printf("A transition from %s to %s with stack %s when char %c arrives already exists\n", automaton->states[t->state_from], automaton->states[t->state_to], automaton->stack_alphabet[t->stack_condition], t->c);
+        printf("A transition from %s with stack %s when char %c arrives already exists\n", automaton->states[t->state_from], automaton->stack_alphabet[t->stack_condition], t->c);
+        free(t);
         return 0;
     }
 
