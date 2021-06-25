@@ -378,10 +378,17 @@ int start_tm(turing_machine * turing_machine, string input_string){
 
         //Write input string into the turing machine, set current at the start of said string
         int w = write_string(turing_machine->current_iteration->list, input_string);
-
+        if ( w < 0){
+            printf("Error while writing input string to the tape\n");
+            free(turing_machine->current_iteration->list);
+            free(turing_machine->current_iteration);
+            return 0;
+        }
         turing_machine->current_iteration->input_string = malloc(strlen(input_string));
         if ( turing_machine->current_iteration->input_string == NULL){
             printf("Error while initializing iteration\n");
+            free(turing_machine->current_iteration->list);
+            free(turing_machine->current_iteration);
             return 0;
         }
         strcpy(turing_machine->current_iteration->input_string, input_string);
