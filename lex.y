@@ -73,6 +73,7 @@
     #include <stdlib.h>
     #include "lex.h"
     #include "automaton.h"
+    #include "turingmachine.h"
     void yyerror2(char * msg, char * word);
     void yyerror(char * s);
     int yylex(void);
@@ -506,11 +507,27 @@ void yyerror(char * s) {
 
 
 int main(int argc, char ** argv) {
+
     if(argc != 2){
         return 0;
     }
-  
+    char aux[strlen(argv[1])]; 
+    strcpy(aux, argv[1]);
+    char* token = strtok(aux, ".");
+    while (token != NULL) {
+        strcpy(aux, token);
+        token = strtok(NULL, ".");
+    }
+    if (strcmp(aux, "rdk") != 0) {
+        fprintf(stderr, "Wrong file extension\n");
+        return 0;
+    }
+
     yyin = fopen(argv[1], "r");
+    if (yyin == NULL) {
+        fprintf(stderr, "File does not exist\n");
+        return 0;
+    }
     yyout = fopen("output.c", "w");
     fprintf(yyout,"#include <stdio.h>\n");
     fprintf(yyout,"#include \"automaton.h\"\n");

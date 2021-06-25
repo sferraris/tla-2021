@@ -45,12 +45,12 @@ main()
 
     states statestm = {"q0","q1","q2","q3","qf"};
     input_alphabet inputtm = {'1', '*'};
-    tape_alphabet tapealph = {'1', '*', 'X'};
+    tape_alphabet tapealph = {'1', '*', 'X', 'B'};
     string iistm = "q0";
     states fistm = {"qf"};
     close(at);
 
-    turing_machine tm = new_turing_machine(statestm, 5, inputtm, 2, tapealph, 3, iistm, fistm, 1, 'B');
+    turing_machine tm = new_turing_machine(statestm, 5, inputtm, 2, tapealph, 4, iistm, fistm, 1, 'B');
 
     add_transition_tm(tm, "q0", "qf", '*', '*', RIGHT);
     add_transition_tm(tm, "q0", "q1", '1', 'X', RIGHT);
