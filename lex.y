@@ -25,11 +25,25 @@
 %token <ival> ISF
 %token <ival> PA
 %token <ival> PEA
+%token <ival> PCS
+%token <ival> TM
+%token <ival> NTM
+%token <ival> MOVEMENT_TYPE 
+%token <ival> ATM
+%token <ival> EXM
+%token <ival> CLM
+%token <ival> STM
+%token <ival> NXM
+%token <ival> ISFM
+%token <ival> PM
+%token <ival> PEM
+%token <ival> PCC
 %token <ival> GE
 %token <ival> EQ
 %token <ival> LE
 %token <ival> NE
 %token <strval> LAMBDA2
+%token <strval> MTS
 %token <strval> DEFINE_TYPE
 %token <strval> DEF_VARIABLE
 %left '+' '-'
@@ -45,10 +59,11 @@
 %type <strval> string_list
 %type <strval> define_list
 %type <strval> char
-%type <strval> asignable_funcitons
+%type <strval> asignable_functions
 %type <strval> define
 %type <strval> value
 %type <strval> simple_expr
+%type <strval> movement
 %error-verbose
 %locations
 
@@ -58,14 +73,11 @@
     #include <stdlib.h>
     #include "lex.h"
     #include "automaton.h"
+    #include "turingmachine.h"
     void yyerror2(char * msg, char * word);
     void yyerror(char * s);
     int yylex(void);
     int sym[26];
-    char aux1[100];
-    char aux2[100];
-    char aux3[100];
-    char aux4[100];
     extern FILE * yyin, * yyout;
     struct variables * first = 0;
     extern int yylineno;
@@ -95,15 +107,22 @@ expr:
         }
         
         char aux[100]; sprintf(aux, "%s", $<strval>1); $$=aux; }
+    | DEF_VARIABLE {
+        if(!checkVariable((char *)$<strval>1, first)){
+                yyerror2("Macro is not defined", $<strval>1);
+                return -1; 
+        }
+        
+        char aux[100]; sprintf(aux, "%s", $<strval>1); $$=aux; }
     | expr '+' expr {char aux[100];sprintf(aux, "%s + %s", $<strval>1, $<strval>2);$$=aux;}
     | expr '-' expr {char aux[100];sprintf(aux, "%s - %s", $<strval>1, $<strval>2);$$=aux;}
     | expr '*' expr {char aux[100];sprintf(aux, "%s * %s", $<strval>1, $<strval>2);$$=aux;}
     | expr '/' expr {char aux[100];sprintf(aux, "%s / %s", $<strval>1, $<strval>2);$$=aux;}
     | '(' expr ')' {char aux[100];sprintf(aux, "%s", $<strval>1);$$=aux;}  
-    | asignable_funcitons
+    | asignable_functions
     ;
 
-asignable_funcitons:  AT '(' VARIABLE ',' string ',' string ',' string ',' VARIABLE ',' number2 ',' char ')'  {
+asignable_functions:  AT '(' VARIABLE ',' string ',' string ',' string ',' VARIABLE ',' number2 ',' char ')'  {
         if(!checkVariableWithType($<strval>3, first,AUTOMATON) && !checkVariableWithType($<strval>11, first, STACK_ALPHABET) ){
             yyerror2("Variable not defined or of the wrong type", $$);
             return -1; 
@@ -146,6 +165,51 @@ asignable_funcitons:  AT '(' VARIABLE ',' string ',' string ',' string ',' VARIA
         }
         char aux[1024];
         sprintf(aux, "is_finished(%s)", $<strval>3);
+        $$=aux;
+    }
+    | ATM '(' VARIABLE ',' string ',' string ',' char ',' char ',' movement ')'  {
+        if(!checkVariableWithType($<strval>3, first,TURING_MACHINE)){
+            yyerror2("Variable not defined or of the wrong type", $$);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "add_transition_tm(%s, %s, %s, %s, %s, %s)", $<strval>3, $<strval>5, $<strval>7, $<strval>9,$<strval>11, $<strval>13);
+        $$=aux;
+    }
+    | EXM '(' VARIABLE ',' string ')' {
+        if(!checkVariableWithType($<strval>3, first,TURING_MACHINE)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "execute_tm(%s, %s)", $<strval>3, $<strval>5);
+        $$=aux;
+    }
+    | STM '(' VARIABLE ',' string ')' {
+        if(!checkVariableWithType($<strval>3, first,TURING_MACHINE)){
+             yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "start_tm(%s, %s)", $<strval>3, $<strval>5);
+        $$=aux;
+    }
+    | NXM '(' VARIABLE ')' {
+        if(!checkVariableWithType($<strval>3, first,TURING_MACHINE)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "next_tm(%s)", $<strval>3);
+        $$=aux;
+    }
+    | ISFM '(' VARIABLE ')' {
+        if(!checkVariableWithType($<strval>3, first,TURING_MACHINE)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        char aux[1024];
+        sprintf(aux, "is_finished_tm(%s)", $<strval>3);
         $$=aux;
     }
     ;
@@ -200,6 +264,14 @@ stmt: VARIABLE '=' expr ';' {
         
         fprintf(yyout, "%s %s = %s;\n",getType($<ival>1), $<strval>2, $<strval>4); $$="";
         }
+    | MOVEMENT_TYPE VARIABLE '=' MTS {
+        if(!addVariable($<strval>2, $<ival>1, &first)){
+                yyerror2("Variable was already defined in this scope", $<strval>2);
+                return -1; 
+        }
+        
+        fprintf(yyout, "%s %s = %s;\n",getType($<ival>1), $<strval>2, $<strval>4); $$="";
+    } 
     | IF {fprintf(yyout, "if(");}'(' conditional ')' {fprintf(yyout, "){\n");}  OPEN_DEL stmt_list CLOSE_DEL {fprintf(yyout, "}\n");$$="";}
     | PRINT '('  STRING ')' ';' {fprintf(yyout, "printf(%s);\n", $<strval>3);$$="";}
     | WHILE  {fprintf(yyout, "while(");}'(' conditional ')'{fprintf(yyout, "){\n");}  OPEN_DEL stmt_list CLOSE_DEL {fprintf(yyout, "}\n");$$="";}
@@ -237,7 +309,57 @@ stmt: VARIABLE '=' expr ';' {
         fprintf(yyout, "print_extended_aut(%s);", $<strval>3);
         $$="";
     }
-    | asignable_funcitons ';' {fprintf(yyout, "%s;\n", $<strval>1);}
+    | PCS '(' VARIABLE ')' ';' {
+        if(!checkVariableWithType($<strval>3, first,AUTOMATON)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        fprintf(yyout, "print_current_state(%s);", $<strval>3);
+        $$="";
+    }
+    | TM VARIABLE '=' NTM '('  VARIABLE ',' number2 ',' VARIABLE ',' number2  ',' VARIABLE ','  number2 ',' string ',' VARIABLE ',' number2 ',' char ')' ';'{
+        if(!addVariable($<strval>2, $<ival>1, &first)){
+                yyerror2("Variable was already defined in this scope", $<strval>2); 
+                return -1; 
+        }
+         if(!checkVariableWithType((char *)$<strval>6, first, STATES) && !checkVariableWithType((char *)$<strval>10, first, STRING_TYPE) && !checkVariableWithType((char *)$<strval>14, first, TAPE_ALPHABET) && !checkVariableWithType((char *)$<strval>20, first, STATES) ){
+                yyerror2("Variable not defined or of the wrong type", $$);
+                return -1; 
+        }
+        fprintf(yyout, "turing_machine * %s = new_turing_machine(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);\n", $<strval>2,$<strval>6, $<strval>8, $<strval>10,$<strval>12,$<strval>14,$<strval>16,$<strval>18,$<strval>20,$<strval>22,$<strval>24); $$ = "";
+    }
+    | CLM '(' VARIABLE ')' ';' {
+        if(!checkVariableWithType($<strval>3, first,TURING_MACHINE)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        fprintf(yyout, "close_tm(%s);\n", $<strval>3); $$="";
+    }
+    | PM '(' VARIABLE ')' ';' {
+        if(!checkVariableWithType($<strval>3, first,TURING_MACHINE)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        fprintf(yyout, "print_tm(%s);", $<strval>3);
+        $$="";
+    }
+    | PEM '(' VARIABLE ')' ';' {
+        if(!checkVariableWithType($<strval>3, first,TURING_MACHINE)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        fprintf(yyout, "print_extended_tm(%s);", $<strval>3);
+        $$="";
+    }
+    | PCC '(' VARIABLE ')' ';' {
+        if(!checkVariableWithType($<strval>3, first,TURING_MACHINE)){
+            yyerror2("Variable not defined or of the wrong type", $<strval>3);
+            return -1; 
+        }
+        fprintf(yyout, "print_current_configuration(%s);", $<strval>3);
+        $$="";
+    }
+    | asignable_functions ';' {fprintf(yyout, "%s;\n", $<strval>1); $$="";}
     ;
 
 
@@ -298,14 +420,6 @@ value:  INTEGER {char aux[100];
         sprintf(aux, "%s", $<strval>1);
         $$=aux;
         }
-    | SIMPLE_STRING{char aux[100];
-        sprintf(aux, "%s", $<strval>1);
-        $$=aux;
-        }
-    | STRING {char aux[100];
-        sprintf(aux, "%s", $<strval>1);
-        $$=aux;
-        }
     ;
 
 
@@ -317,7 +431,13 @@ number:
                 return -1; 
         }
     fprintf(yyout, "%s", $<strval>1); }
-    | asignable_funcitons {fprintf(yyout, "%s", $<strval>1);}
+    |DEF_VARIABLE {
+     if(!checkVariable((char *)$<strval>1, first)){
+                yyerror2("Macro is not defined", $<strval>1);
+                return -1; 
+        }
+    fprintf(yyout, "%s", $<strval>1); }
+    | asignable_functions {fprintf(yyout, "%s", $<strval>1);}
     ;
 number2:
     INTEGER 
@@ -327,12 +447,18 @@ number2:
                 return -1; 
         }
     }
+    |DEF_VARIABLE {
+     if(!checkVariable((char *)$<strval>1, first)){
+                yyerror2("Macro is not defined", $<strval>1);
+                return -1; 
+        }
+    }
     ;
 
 string:
     STRING 
     |VARIABLE  {
-     if(!checkVariableWithType((char *)$<strval>1, first, STRING)){
+     if(!checkVariableWithType((char *)$<strval>1, first, STRING_TYPE)){
                 yyerror2("Variable not defined or of the wrong type", $<strval>1);
                 return -1; 
         }
@@ -347,7 +473,15 @@ char:
         }
     }
     ;
-
+movement:
+    MTS 
+    |VARIABLE {
+     if(!checkVariableWithType((char *)$<strval>1, first, MOVEMENT)){
+                yyerror2("Variable not defined or of the wrong type", $<strval>1);
+                return -1; 
+        }
+    }
+    ;
 conditional:
         number 
     |   number '<' {fprintf(yyout, " < ");} number 
@@ -373,14 +507,31 @@ void yyerror(char * s) {
 
 
 int main(int argc, char ** argv) {
+
     if(argc != 2){
         return 0;
     }
-  
+    char aux[strlen(argv[1])]; 
+    strcpy(aux, argv[1]);
+    char* token = strtok(aux, ".");
+    while (token != NULL) {
+        strcpy(aux, token);
+        token = strtok(NULL, ".");
+    }
+    if (strcmp(aux, "rdk") != 0) {
+        fprintf(stderr, "Wrong file extension\n");
+        return 0;
+    }
+
     yyin = fopen(argv[1], "r");
+    if (yyin == NULL) {
+        fprintf(stderr, "File does not exist\n");
+        return 0;
+    }
     yyout = fopen("output.c", "w");
     fprintf(yyout,"#include <stdio.h>\n");
     fprintf(yyout,"#include \"automaton.h\"\n");
+    fprintf(yyout,"#include \"turingmachine.h\"\n");
     if(yyparse()!=0){
         fclose(yyin);
         fclose(yyout);
