@@ -18,7 +18,10 @@ char * getType(enum types type){
     "input_alphabet",
     "stack_alphabet",
     "string",
-    "#define"
+    "#define",
+    "turing_machine",
+    "movement",
+    "tape_alphabet"
     };
 
     return types[type];

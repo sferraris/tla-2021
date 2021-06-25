@@ -16,7 +16,10 @@ enum types{
     INPUT_ALPHABET,
     STACK_ALPHABET,
     STRING_TYPE,
-    DEFINE
+    DEFINE,
+    TURING_MACHINE,
+    MOVEMENT,
+    TAPE_ALPHABET
 };
 
 char * getType(enum types type);

@@ -1,4 +1,3 @@
-#define HOLA "holis"
 #define MICUS 3
 #define RULITO (3/2)
 main()
@@ -6,7 +5,7 @@ main()
     int i = 4;
     i=i+1;
     long rulito;
-    double dnum = -45.45;
+    double dnum = RULITO;
     int mic= 34;
     if(i>3){
         i = 5;
@@ -19,7 +18,6 @@ main()
     string inits = "q0";
     states fis = {"qf"};
     string fins = "z";
-    fins = 3;
     automaton at =  new_automaton(statess, 4, inputalph, 3, stackalph, 3, inits, fins, fis, 0);
 
     stack_alphabet replacement = {"z"};
@@ -44,9 +42,37 @@ main()
         nx = next(at);
         
     }
-   
-    
 
+    states statestm = {"q0","q1","q2","q3","qf"};
+    input_alphabet inputtm = {'1', '*'};
+    tape_alphabet tapealph = {'1', '*', 'X'};
+    string iistm = "q0";
+    states fistm = {"qf"};
     close(at);
 
+    turing_machine tm = new_turing_machine(statestm, 5, inputtm, 2, tapealph, 3, iistm, fistm, 1, 'B');
+
+    add_transition_tm(tm, "q0", "qf", '*', '*', RIGHT);
+    add_transition_tm(tm, "q0", "q1", '1', 'X', RIGHT);
+    add_transition_tm(tm, "q1", "q1", '*', '*', RIGHT);
+    add_transition_tm(tm, "q1", "q1", '1', '1', RIGHT);
+    add_transition_tm(tm, "q1", "q2", 'B', '1', RIGHT);
+    add_transition_tm(tm, "q2", "q3", 'B', '1', LEFT);
+    add_transition_tm(tm, "q3", "q3", '1', '1', LEFT);
+    add_transition_tm(tm, "q3", "q3", '*', '*', LEFT);
+    add_transition_tm(tm, "q3", "q0", 'X', 'X', RIGHT);
+
+    print_extended_tm(tm);
+
+    int s = start_tm(tm, "11*");
+    if ( s == 0){
+        print("Error en start\n");
+    }
+    while ( !is_finished_tm(tm) ){
+        if (next_tm(tm) == -1){
+            print("Error holis\n");
+        }
+    }
+
+    close_tm(tm);
 }
