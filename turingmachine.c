@@ -14,49 +14,116 @@ void print_current_configuration(turing_machine * a);
 turing_machine * init_turing_machine(string * states, int states_size, char * input_alphabet, int input_alphabet_size, char * tape_alphabet, int tape_alphabet_size, string initial_input_state, string * final_states, int final_states_size, char blank);
 int validate_tm_transition(turing_machine * tm, tm_transition * t);
 int is_tm_input_alphabet(turing_machine * tm, char c);
+int is_tm_tape_alphabet(turing_machine * tm, char c);
 int get_tm_transition(turing_machine * tm, int current_state, char condition);
 void end_tm_iteration(turing_machine * tm);
 int is_final_tm_state(turing_machine * tm, string state);
 void free_tm(turing_machine * tm);
 int get_tm_input_state_index(turing_machine * tm, string s);
 
-
+/*
 int main(void){
-    string states[] = {"q0","q1","q2","q3","qf"};
+     X*Y
+    string states[] = {"q0","q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12","qf"};
     char input_alph[] = {'1', '*'};
     char tape_alph[] = {'1', '*', 'X'};
     string i_i_s = "q0";
     string f_i_s[] = {"qf"};
 
-    turing_machine * tm = new_turing_machine(states, 5, input_alph, 2, tape_alph, 3, i_i_s, f_i_s, 1, 'B');
+    turing_machine * tm = new_turing_machine(states, 14, input_alph, 2, tape_alph, 3, i_i_s, f_i_s, 1, 'B');
 
-    add_transition_tm(tm, "q0", "qf", '*', '*', RIGHT);
-    add_transition_tm(tm, "q0", "q1", '1', 'X', RIGHT);
-    add_transition_tm(tm, "q1", "q1", '*', '*', RIGHT);
+    if ( tm == NULL){
+        printf("Error while creating turing machine\n");
+        return -1;
+    }
+    
+    add_transition_tm(tm, "q0", "q1", '1', 'B', RIGHT);
     add_transition_tm(tm, "q1", "q1", '1', '1', RIGHT);
-    add_transition_tm(tm, "q1", "q2", 'B', '1', RIGHT);
-    add_transition_tm(tm, "q2", "q3", 'B', '1', LEFT);
-    add_transition_tm(tm, "q3", "q3", '1', '1', LEFT);
-    add_transition_tm(tm, "q3", "q3", '*', '*', LEFT);
-    add_transition_tm(tm, "q3", "q0", 'X', 'X', RIGHT);
+    add_transition_tm(tm, "q1", "q2", '*', '*', RIGHT);
+    add_transition_tm(tm, "q2", "q3", '1', 'X', RIGHT);
+    add_transition_tm(tm, "q3", "q3", '1', '1', RIGHT);
+    add_transition_tm(tm, "q3", "q4", 'B', 'B', RIGHT);
+    add_transition_tm(tm, "q4", "q4", '1', '1', RIGHT);
+    add_transition_tm(tm, "q4", "q5", 'B', '1', LEFT);
+    add_transition_tm(tm, "q5", "q5", '1', '1', LEFT);
+    add_transition_tm(tm, "q5", "q6", 'B', 'B', LEFT);
+    add_transition_tm(tm, "q6", "q7", '1', '1', LEFT);
+    add_transition_tm(tm, "q7", "q7", '1', '1', LEFT);
+    add_transition_tm(tm, "q7", "q2", 'X', '1', RIGHT);
+    add_transition_tm(tm, "q6", "q8", 'X', '1', LEFT);
+    add_transition_tm(tm, "q8", "q8", '1', '1', LEFT);
+    add_transition_tm(tm, "q8", "q9", '*', '*', LEFT);
+    add_transition_tm(tm, "q9", "q10", '1', '1', LEFT);
+    add_transition_tm(tm, "q10", "q10", '1', '1', LEFT);
+    add_transition_tm(tm, "q10", "q0", 'B', 'B', RIGHT);
+    add_transition_tm(tm, "q9", "q11", 'B', 'B', RIGHT);
+    add_transition_tm(tm, "q11", "q12", '*', '*', RIGHT);
+    add_transition_tm(tm, "q12", "q12", '1', '1', RIGHT);
+    add_transition_tm(tm, "q12", "qf", 'B', 'B', RIGHT);
+    
+
+   
+    string states[] = {"q0","q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12","qf"};
+    char input_alph[] = {'1', '*'};
+    char tape_alph[] = {'1', '*', 'B'};
+    string i_i_s = "q0";
+    string f_i_s[] = {"qf"};
+
+    turing_machine * tm = new_turing_machine(states, 14, input_alph, 2, tape_alph, 3, i_i_s, f_i_s, 1, 'B');
+
+    if ( tm == NULL){
+        printf("Error while creating turing machine\n");
+        return -1;
+    }
+
+    add_transition_tm(tm, "q0", "q1", '1', 'B', RIGHT);
+    add_transition_tm(tm, "q1", "q1", '1', '1', RIGHT);
+    add_transition_tm(tm, "q1", "q2", '*', '*', RIGHT);
+    add_transition_tm(tm, "q2", "q2", '1', '1', RIGHT);
+    add_transition_tm(tm, "q2", "q3", 'B', '*', RIGHT);
+    add_transition_tm(tm, "q2", "q3", '*', '*', RIGHT);
+    add_transition_tm(tm, "q3", "q3", '1', '1', RIGHT);
+    add_transition_tm(tm, "q3", "q4", 'B', '1', LEFT);
+    add_transition_tm(tm, "q4", "q4", '1', '1', LEFT);
+    add_transition_tm(tm, "q4", "q5", '*', '*', LEFT);
+    add_transition_tm(tm, "q5", "q5", '1', '1', LEFT);
+    add_transition_tm(tm, "q5", "q6", '*', '*', LEFT);
+    add_transition_tm(tm, "q6", "q6", '1', '1', LEFT);
+    add_transition_tm(tm, "q6", "q0", 'B', 'B', RIGHT);
+
+    add_transition_tm(tm, "q0", "q7", '*', '*', RIGHT);
+    add_transition_tm(tm, "q7", "q8", '1', 'B', RIGHT);
+    add_transition_tm(tm, "q8", "q8", '1', '1', RIGHT);
+    add_transition_tm(tm, "q8", "q9", '*', '*', RIGHT);
+    add_transition_tm(tm, "q9", "q9", '1', '1', RIGHT);
+    add_transition_tm(tm, "q9", "q10", 'B', '1', LEFT);
+    add_transition_tm(tm, "q10", "q10", '1', '1', LEFT);
+    add_transition_tm(tm, "q10", "q11", '*', '*', LEFT);
+    add_transition_tm(tm, "q11", "q11", '1', '1', LEFT);
+    add_transition_tm(tm, "q11", "q7", 'B', 'B', RIGHT);
+
+
+    add_transition_tm(tm, "q7", "q12", '*', '*', LEFT);
+    add_transition_tm(tm, "q12", "q12", '1', 'B', LEFT);
+    add_transition_tm(tm, "q12", "q12", '*', '*', LEFT);
+    add_transition_tm(tm, "q12", "qf", 'B', 'B', RIGHT);
 
     print_tm(tm);
 
-    int s = start_tm(tm, "11*");
-    if ( s == 0){
-        printf("Error en start\n");
-    }
-    while ( !is_finished_tm(tm) ){
-        if (next_tm(tm) == -1){
-            printf("Error holis\n");
-        }
+    start_tm(tm, "111*1111");
 
+    while ( !is_finished_tm(tm) ){
+        int n = next_tm(tm);
+        if ( n == -1){
+            printf("Iteration error tm\n");
+            break;
+        }
     }
 
 
     return 0;
 }
-
+*/
 turing_machine * new_turing_machine(string * states, int states_size, char * input_alphabet, int input_alphabet_size, char * tape_alphabet, int tape_alphabet_size, string initial_input_state, string * final_states, int final_states_size, char blank){
     
     if ( states_size == 0){
@@ -78,12 +145,19 @@ turing_machine * new_turing_machine(string * states, int states_size, char * inp
         printf("A Turing Machine can't have no input alphabet\n");
         return NULL;
     }
-     
     
     turing_machine * tm = init_turing_machine(states, states_size, input_alphabet, input_alphabet_size, tape_alphabet, tape_alphabet_size, initial_input_state, final_states, final_states_size, blank);
     if ( tm == NULL){
         printf("Error initializing turing machine\n");
         return NULL;
+    }
+
+    for ( int i = 0; i < input_alphabet_size; i++ ){
+        if ( !is_tm_tape_alphabet(tm, input_alphabet[i]) ){
+            printf("Input alphabet must be included in the tape alphabet\n");
+            free_tm(tm);
+            return NULL;
+        }
     }
 
     return tm;
@@ -140,7 +214,7 @@ turing_machine * init_turing_machine(string * states, int states_size, char * in
     for ( int i = 0; i < final_states_size; i++){
         tm->final_states[i] = get_tm_input_state_index(tm, final_states[i]);
         if ( tm->final_states[i] == -1){
-            printf("final state element is not a state : %d %s\n", i, final_states[i]);
+            printf("final state element is not a state : %s\n", final_states[i]);
             free_tm(tm);
             return NULL;
         }
@@ -155,6 +229,12 @@ turing_machine * init_turing_machine(string * states, int states_size, char * in
     }
 
     tm->blank = blank;
+    if ( !is_tm_tape_alphabet(tm, blank) ){
+        free_tm(tm);
+        printf("Blank Symbol is not in the Tape Alphabet\n");
+        return NULL;
+    }
+
     tm->transition = NULL;
     tm->transition_size = 0;
 
@@ -219,28 +299,20 @@ int add_transition_tm(turing_machine * turing_machine, string state_from, string
         return 0;
     }
 
-    if ( tape_condition != turing_machine->blank){
-        t->tape_condition = get_alphabet_index(turing_machine, tape_condition);
-        if ( t->tape_condition == -1){
-            printf("%c is not in the tape alphabet\n", tape_condition);
-            free(t);
-            return 0;
-        }
+    t->tape_condition = get_alphabet_index(turing_machine, tape_condition);
+    if ( t->tape_condition == -1){
+        printf("%c is not in the tape alphabet\n", tape_condition);
+        free(t);
+        return 0;
     }
-    else
-        t->tape_condition = BLANK_INDEX;
 
-    
-    if ( tape_replacement != turing_machine->blank){
-        t->tape_replacement = get_alphabet_index(turing_machine, tape_replacement);
-        if ( t->tape_replacement == -1){
-            printf("%c is not in the tape alphabet\n", tape_replacement);
-            free(t);
-            return 0;
-        }
+
+    t->tape_replacement = get_alphabet_index(turing_machine, tape_replacement);
+    if ( t->tape_replacement == -1){
+        printf("%c is not in the tape alphabet\n", tape_replacement);
+        free(t);
+        return 0;
     }
-    else
-        t->tape_replacement = BLANK_INDEX;
 
     if ( move == RIGHT || move == LEFT)
         t->move = move;
@@ -330,6 +402,14 @@ int is_tm_input_alphabet(turing_machine * tm, char c){
     return 0;
 }
 
+int is_tm_tape_alphabet(turing_machine * tm, char c){
+    for ( int i = 0; i < tm->tape_alphabet_size; i++){
+        if ( c == tm->tape_alphabet[i] )
+            return 1;
+    }
+    return 0;
+}
+
 int next_tm(turing_machine * turing_machine){
      /*
     - Reconocer el estado actual de la iteracion
@@ -347,14 +427,15 @@ int next_tm(turing_machine * turing_machine){
     int current_state = turing_machine->current_iteration->current_state;
     char condition = turing_machine->current_iteration->list->list[turing_machine->current_iteration->list->current];
 
-    print_current_configuration(turing_machine);
-    //printf("current state: %s condition: %c\n", turing_machine->states[current_state], condition);
+    //print_current_configuration(turing_machine);
     int transition = get_tm_transition(turing_machine, current_state, condition);
     if ( transition == -1){
         printf("No transition available, turing machine cannot end\n");
         end_tm_iteration(turing_machine);
         return -1;
     }
+    
+    //printf("current state: %s condition: %c replacement: %c\n", turing_machine->states[current_state], condition, turing_machine->tape_alphabet[turing_machine->transition[transition]->tape_replacement] );
 
     //Cambiar el estado actual
     turing_machine->current_iteration->current_state = turing_machine->transition[transition]->state_to;
@@ -375,7 +456,7 @@ int next_tm(turing_machine * turing_machine){
 
 int get_tm_transition(turing_machine * tm, int current_state, char condition){
     for ( int i = 0; i < tm->transition_size; i++){
-        if ( ( tm->tape_alphabet[tm->transition[i]->tape_condition] == condition || (condition == tm->blank && tm->transition[i]->tape_condition == BLANK_INDEX) )
+        if ( tm->tape_alphabet[tm->transition[i]->tape_condition] == condition
             && tm->transition[i]->state_from == current_state){
                 return i;
         }
@@ -426,7 +507,7 @@ int is_finished_tm(turing_machine * turing_machine){
 }
 
 void print_tm(turing_machine * tm){
-    printf("M = < ");
+    printf("TM = < ");
     //Print States
     printf("{");
         for( int i = 0; i < tm->states_size; i++){
@@ -475,11 +556,16 @@ void print_tm(turing_machine * tm){
     printf(" >\n\n");
     
 
-
-    printf("𝛿:\n");
-    for ( int i = 0; i < tm->transition_size; i++){
-        printf("%d. %s➔%s\t %c|%c %c\n", i + 1, tm->states[tm->transition[i]->state_from], tm->states[tm->transition[i]->state_to], ( tm->transition[i]->tape_condition == BLANK_INDEX )? tm->blank : tm->tape_alphabet[tm->transition[i]->tape_condition], ( tm->transition[i]->tape_condition == BLANK_INDEX )? tm->blank : tm->tape_alphabet[tm->transition[i]->tape_replacement], ( tm->transition[i]->move == RIGHT)? 'R' : 'L');
+    if ( tm->transition_size == 0){
+        printf("𝛿: ∅\n");
     }
+    else {
+        printf("𝛿:\n");
+        for ( int i = 0; i < tm->transition_size; i++){
+            printf("%d. %s➔%s\t %c|%c %c\n", i + 1, tm->states[tm->transition[i]->state_from], tm->states[tm->transition[i]->state_to], tm->tape_alphabet[tm->transition[i]->tape_condition], tm->tape_alphabet[tm->transition[i]->tape_replacement], ( tm->transition[i]->move == RIGHT)? 'R' : 'L');
+        }
+    }
+    
     putchar('\n');
 
 }

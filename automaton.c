@@ -33,12 +33,13 @@ int main(void){
 
     automaton * aut = new_automaton(states, 4, input_alph, 3, stack_alph, 3, i_i_s, i_s, f_i_s, 1);
 
+
     string replacement[] = {"z", "A"};
     if ( !add_transition(aut, "q0", "q1", "z", replacement, 2, 'a') ){
         printf("Error while adding transition\n");
         return 0;
     }
-
+    
     string replacementa[] = {"B", "A"};
     if ( !add_transition(aut, "q0", "q1", "B", replacementa, 2, 'a') ){
         printf("Error while adding transition\n");
@@ -66,61 +67,24 @@ int main(void){
         print_aut(aut);
     }
 
-    int exec = execute(aut, "abababcababab");
+    int exec = start(aut, "abababcababab");
     if ( exec == 0)
         printf("The word does not belong\n");
-
+    while(!is_finished(aut)){
+        print_current_state(aut);
+        int n = next(aut);
+        if ( n == -1){
+            printf("Error\n");
+            break;
+        }
+    }
     free_automaton(aut);
     aut = NULL; 
     
- 
-    int i = 4;
-i = i + i;
-long rulito = 1;
-int mic = 3;
-if(i > 3){
-i = 5;
-}
-string statess[] = { "q0" , "q1" , "q2" , "qf" };
-char inputalph[] = { 'a' , 'b' , 'c' };
-string stackalph[] = { "z" , "A" , "B" };
-string inits = "q0";
-string fis[] = { "qf" };
-string fins = "z";
-automaton * at = new_automaton(statess, 4, inputalph, 3, stackalph, 3, inits, fins, fis, 0);
-string replacement[] = { "z" };
-int t = add_transition(at, "q0", "q1", "z", replacement, 1, 'a');
-string replacementt[] = { LAMBDA };
-t = add_transition(at, "q1", "qf", "z", replacementt, 1, 'b');
-print_aut(at);
-int exec = execute(at, "ab");
-if(exec == 1){
-printf("holis hola\n");
-}
-
-i = 5;
-int st = start(at, "abc");
-if ( st == 0)
-    printf("Error del start\n");
-int nx = 0;
-int finished = 0;
-print_extended_aut(at);
-while(finished != 1){
-nx = next(at);
-finished = is_finished(at);
-}
-
-
-if(finished == 1){
-printf("termino afuera\n");
-}
-if(finished != 1){
-printf("estoy afuer\n");
-}
-close(at);  
-    return 0;
+   return 0;
 }
 */
+
 
 automaton * new_automaton(string * states, int states_size, char * input_alphabet, int input_alphabet_size, string * stack_alphabet, int stack_alphabet_size, string initial_input_state, string initial_stack, string * final_states, int final_states_size){
     
@@ -181,6 +145,11 @@ int add_transition(automaton * automaton, string state_from, string state_to, st
                 return 0;
             }
         }  
+    }
+
+    if ( !is_input_alphabet(automaton, c) && c != LAMBDA){
+        printf("%c is not in the input alphabet\n", c);
+        return 0;
     }
 
     transition * t = malloc(sizeof(transition));
@@ -358,8 +327,7 @@ automaton * init_automaton(string * states, int states_size, char * input_alphab
     for ( int i = 0; i < final_states_size; i++){
         a->final_states[i] = get_input_state_index(a, final_states[i]);
         if ( a->final_states[i] == -1){
-            printf("final state element is not a state : %d %s\n", i, final_states[i]);
-            print_aut(a);
+            printf("final state element is not a state : %s\n", final_states[i]);
             free_automaton(a);
             return NULL;
         }
@@ -370,7 +338,6 @@ automaton * init_automaton(string * states, int states_size, char * input_alphab
     if ( a->initial_input_state == -1){
         free_automaton(a);
         printf("initial state is not a state\n");
-        print_aut(a);
         return NULL;
     }
 
@@ -534,15 +501,19 @@ void print_aut(automaton * a){
     printf(" >\n\n");
     
 
-
-    printf("𝛿:\n");
-    for ( int i = 0; i < a->transition_size; i++){
-        char aux[2];
-        sprintf(aux, "%c", a->transition[i]->c);
-        printf("%d. %s➔%s\t%s, %s|", i + 1, a->states[a->transition[i]->state_from], a->states[a->transition[i]->state_to],( (a->transition[i]->c == LAMBDA_INDEX)? "λ" : aux ), a->stack_alphabet[a->transition[i]->stack_condition]);
-        for ( int j = 0; j < a->transition[i]->stack_replacement_size; j++)
-            printf("%s", (a->transition[i]->stack_replacement[j] == LAMBDA_INDEX)? "λ" : a->stack_alphabet[a->transition[i]->stack_replacement[j]] );
-        putchar('\n');
+    if ( a->transition_size == 0){
+        printf("𝛿: ∅\n");
+    }
+    else {
+        printf("𝛿:\n");
+        for ( int i = 0; i < a->transition_size; i++){
+            char aux[2];
+            sprintf(aux, "%c", a->transition[i]->c);
+            printf("%d. %s➔%s\t%s, %s|", i + 1, a->states[a->transition[i]->state_from], a->states[a->transition[i]->state_to],( (a->transition[i]->c == LAMBDA_INDEX)? "λ" : aux ), a->stack_alphabet[a->transition[i]->stack_condition]);
+            for ( int j = 0; j < a->transition[i]->stack_replacement_size; j++)
+                printf("%s", (a->transition[i]->stack_replacement[j] == LAMBDA_INDEX)? "λ" : a->stack_alphabet[a->transition[i]->stack_replacement[j]] );
+            putchar('\n');
+        }
     }
     putchar('\n');
 
@@ -565,10 +536,12 @@ void print_extended_aut(automaton * a){
 
 void print_current_state(automaton * a){
     if ( a->started != 0){
-        int stack_top = LAMBDA;
+        int stack_top;
         if ( !isEmpty(a->current_iteration->stack))
             stack_top = peek(a->current_iteration->stack);
-        printf("Current state: %s\tStack top: %s\tRemaining word: %s\n", a->states[a->current_iteration->current_state], (stack_top == LAMBDA)? "λ" : a->stack_alphabet[stack_top], ( (a->current_iteration->input_string[a->current_iteration->current_iteration_pointer] == LAMBDA)? "λ" : a->current_iteration->input_string + a->current_iteration->current_iteration_pointer ) );
+        else
+            stack_top = LAMBDA_INDEX;
+        printf("Current state: %s\tStack top: %s\tRemaining word: %s\n", a->states[a->current_iteration->current_state], (stack_top == LAMBDA_INDEX)? "λ" : a->stack_alphabet[stack_top], ( (a->current_iteration->input_string[a->current_iteration->current_iteration_pointer] == LAMBDA)? "λ" : a->current_iteration->input_string + a->current_iteration->current_iteration_pointer ) );
     }
     else{
         printf("No iteration started for this automaton\n");
@@ -668,7 +641,7 @@ int next(automaton * automaton){
     else
         stack_top = LAMBDA_INDEX;
 
-    print_current_state(automaton);
+    //print_current_state(automaton);
     int transition = get_transition(automaton, current_state, stack_top, next_char);
     if ( transition == -1){
         printf("No transition available, word does not belong to the language \n");

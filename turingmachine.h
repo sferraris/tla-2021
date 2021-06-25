@@ -4,7 +4,6 @@
 #include "lib.h"
 #include "doublelist.h"
 
-#define BLANK_INDEX -1
 #define CONFIGURATION_PRINT_N 5
 
 
