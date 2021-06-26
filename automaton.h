@@ -55,16 +55,16 @@ automaton * new_automaton(string * states, int states_size, char * input_alphabe
 //Add a new transition to a given automaton, returns 0 on error, 1 on success
 int add_transition(automaton * automaton, string state_from, string state_to, string stack_condition, string * stack_replacement, int stack_replacement_size, char c);
 
-//Executes an automaton with a given string, returns 0 on error, 1 on success
+//Executes an automaton with a given string, returns -1 on error, 0 if it does not belong, 1 on success
 int execute(automaton * automaton, string input_string);
 
-//Starts an automaton with a given string and implements iteration, returns 0 on error, 1 on success
+//Starts an automaton with a given string and implements iteration, returns -1 on error, 0 if it does not belong, 1 on success
 int start(automaton * automaton, string input_string);
 
 //Next element of the automaton iteration, returns 0 on error, 1 on success
 int next(automaton * automaton);
 
-//Cloase an opened automaton and free data structures
+//Close an opened automaton and free data structures
 void close(automaton * automaton);
 
 //Returns 1 if iteration finished, 0 if not

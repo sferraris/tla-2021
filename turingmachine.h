@@ -58,10 +58,10 @@ turing_machine * new_turing_machine(string * states, int states_size, char * inp
 //Add a new transition to a given turing_machine, returns 0 on error, 1 on success
 int add_transition_tm(turing_machine * turing_machine, string state_from, string state_to, char tape_condition, char tape_replacement, movement move);
 
-//Executes an turing_machine with a given string, returns 0 on error, 1 on success
+//Executes an turing_machine with a given string, returns -1 on error, 0 if the action can't be completed, 1 on success
 int execute_tm(turing_machine * turing_machine, string input_string);
 
-//Starts an turing_machine with a given string and implements iteration, returns 0 on error, 1 on success
+//Starts an turing_machine with a given string and implements iteration, returns -1 on error, 0 if the action can't be completed, 1 on success
 int start_tm(turing_machine * turing_machine, string input_string);
 
 //Next element of the turing_machine iteration, returns 0 on error, 1 on success

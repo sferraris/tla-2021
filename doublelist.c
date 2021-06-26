@@ -10,20 +10,6 @@ int write_string(doublelist * pt, string s);
 void printxlist(doublelist * pt, int x);
 
 
-/*
-int main(void){
-    doublelist * d = newdoublelist('B');
-
-    printlist(d);
-    write_string(d, "hola_micus");
-    printlist(d);
-    printf("get_current: %c\n", get_current(d));
-
-    printxlist(d, 2);
-    return 0;
-}
-*/
-
 doublelist* newdoublelist(char blank){
     doublelist * d = malloc(sizeof(doublelist));
     if (d == NULL)

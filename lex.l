@@ -71,7 +71,7 @@ void yyerror(char *);
 "<=" { yylval.ival=0;return LE;}
 "!=" { yylval.ival=0;return NE;}
 
-"//"[a-zA-Z0-9]*([\n]|[\r\n]) ;
+"//"[ -~]*([\n]|[\r\n]) ;
 
 "LAMBDA" {yylval.strval=strdup(yytext);return LAMBDA2;}
 "LEFT" {yylval.strval=strdup(yytext);return MTS;}

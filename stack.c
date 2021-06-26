@@ -80,25 +80,3 @@ int pop(stack *pt)
     return pt->items[pt->top--];
 }
  
-/*
-int main(void){
-    stack *pt = newStack(3);
-    push(pt, 1);
-    push(pt, 2);
-    push(pt, 3);
-    
-    printf("The maxsize is: %d\n", pt->maxsize);
-
-    for ( int i = 0; i < 3; i++){
-        printf("stack: %d\n", peek(pt));
-    }
-
-    push(pt, 4);
-    printf("Now the maxsize is: %d\n", pt->maxsize);
-
-    for ( int i = 0; i < 4; i++){
-        printf("stack: %d\n", peek(pt));
-    }
-    return 0;
-}
-*/

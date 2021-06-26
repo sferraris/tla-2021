@@ -1,0 +1,73 @@
+#define NULL 0
+
+main()
+{
+    // Este automata acepta el lenguaje en el que cantidad de letras de x es igual a la cantidad de letras de y
+    // Se puede ver como se utiliza el ciclo while para imprimir el estado actual del automata
+    // y asi entender mejor su funcionamiento
+
+
+    states s = {"P", "Q", "R"};
+    input_alphabet inputalph = {'x', 'y'};
+    stack_alphabet stackalph = {"S", "x", "y"};
+    string inits = "P";
+    states fis = {"P"};
+    string fins = "S";
+    automaton at =  new_automaton(s, 3, inputalph, 2, stackalph, 3, inits, fins, fis, 1);
+
+    if ( at == NULL){
+        print("Null automaton\n");
+        end;
+    }
+
+    stack_alphabet rpsx = {"x", "S"};
+    add_transition(at, "P", "Q", "S", rpsx, 2, 'x');
+
+    stack_alphabet rpxx = {"x", "x"};
+    add_transition(at, "Q", "Q", "x", rpxx, 2, 'x');
+
+    stack_alphabet rpyx = {"x", "y"};
+    add_transition(at, "Q", "Q", "y", rpyx, 2, 'x');
+
+    stack_alphabet rplambda = {LAMBDA};
+    add_transition(at, "Q", "Q", "x", rplambda, 1, 'y');
+
+    stack_alphabet rps = {"S"};
+    add_transition(at, "Q", "P", "S", rps, 1, LAMBDA);
+
+    stack_alphabet rpsy = {"y", "S"};
+    add_transition(at, "P", "R", "S", rpsy, 2, 'y');
+
+    stack_alphabet rpyy = {"y", "y"};
+    add_transition(at, "R", "R", "y", rpyy, 2, 'y');
+
+    stack_alphabet rpxy = {"y", "x"};
+    add_transition(at, "R", "R", "x", rpxy, 2, 'y');
+
+    add_transition(at, "R", "R", "y", rplambda, 1, 'x');
+
+    add_transition(at, "R", "P", "S", rps, 1, LAMBDA);
+
+    print_extended_aut(at);
+
+    int start_aut = start(at, "xxyxxyyyxyxy");
+    if ( start_aut == 0){
+        print("Could not initialize automaton\n");
+    }
+
+    int n;
+    int flag = 0;
+    if ( start_aut != 0){
+        while( !is_finished(at) && flag == 0){
+            print_current_state(at);
+            n = next(at);
+            if ( n == -1){
+                flag = 1;
+            }
+        }
+    }
+    
+
+    close(at);
+
+}

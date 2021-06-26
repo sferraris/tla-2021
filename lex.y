@@ -286,7 +286,7 @@ stmt: VARIABLE '=' expr ';' {
         
         fprintf(yyout, "%s %s = %s;\n",getType($<ival>1), $<strval>2, $<strval>4); $$="";
         }
-    | MOVEMENT_TYPE VARIABLE '=' MTS {
+    | MOVEMENT_TYPE VARIABLE '=' MTS ';' {
         if(!addVariable($<strval>2, $<ival>1, &first)){
                 yyerror2("Variable was already defined in this scope", $<strval>2);
                 return -1; 

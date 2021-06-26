@@ -1,0 +1,53 @@
+#define NULL 0
+
+main()
+{
+    // Esta maquina de turing recibe un string en unario de dos parametros (x, y) 
+    // separados por un * (de la forma 11*111 por ejemplo)
+    // Deja en la respuesta x * y,
+
+
+    states s = {"q0","q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12","qf"};
+    input_alphabet input_alph = {'1', '*'};
+    tape_alphabet tape_alph = {'1', '*', 'X', 'B'};
+    string i_i_s = "q0";
+    states f_i_s = {"qf"};
+
+    turing_machine tm = new_turing_machine(s, 14, input_alph, 2, tape_alph, 4, i_i_s, f_i_s, 1, 'B');
+
+    if ( tm == NULL){
+        print("Error while creating turing machine\n");
+        end;
+    }
+    
+    add_transition_tm(tm, "q0", "q1", '1', 'B', RIGHT);
+    add_transition_tm(tm, "q1", "q1", '1', '1', RIGHT);
+    add_transition_tm(tm, "q1", "q2", '*', '*', RIGHT);
+    add_transition_tm(tm, "q2", "q3", '1', 'X', RIGHT);
+    add_transition_tm(tm, "q3", "q3", '1', '1', RIGHT);
+    add_transition_tm(tm, "q3", "q4", 'B', 'B', RIGHT);
+    add_transition_tm(tm, "q4", "q4", '1', '1', RIGHT);
+    add_transition_tm(tm, "q4", "q5", 'B', '1', LEFT);
+    add_transition_tm(tm, "q5", "q5", '1', '1', LEFT);
+    add_transition_tm(tm, "q5", "q6", 'B', 'B', LEFT);
+    add_transition_tm(tm, "q6", "q7", '1', '1', LEFT);
+    add_transition_tm(tm, "q7", "q7", '1', '1', LEFT);
+    add_transition_tm(tm, "q7", "q2", 'X', '1', RIGHT);
+    add_transition_tm(tm, "q6", "q8", 'X', '1', LEFT);
+    add_transition_tm(tm, "q8", "q8", '1', '1', LEFT);
+    add_transition_tm(tm, "q8", "q9", '*', '*', LEFT);
+    add_transition_tm(tm, "q9", "q10", '1', '1', LEFT);
+    add_transition_tm(tm, "q10", "q10", '1', '1', LEFT);
+    add_transition_tm(tm, "q10", "q0", 'B', 'B', RIGHT);
+    add_transition_tm(tm, "q9", "q11", 'B', 'B', RIGHT);
+    add_transition_tm(tm, "q11", "q12", '*', '*', RIGHT);
+    add_transition_tm(tm, "q12", "q12", '1', '1', RIGHT);
+    add_transition_tm(tm, "q12", "qf", 'B', 'B', RIGHT);
+
+    print_extended_tm(tm);
+
+    execute_tm(tm, "111*1111");
+
+    close_tm(tm);
+
+}

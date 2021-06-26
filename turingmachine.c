@@ -21,109 +21,6 @@ int is_final_tm_state(turing_machine * tm, string state);
 void free_tm(turing_machine * tm);
 int get_tm_input_state_index(turing_machine * tm, string s);
 
-/*
-int main(void){
-     X*Y
-    string states[] = {"q0","q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12","qf"};
-    char input_alph[] = {'1', '*'};
-    char tape_alph[] = {'1', '*', 'X'};
-    string i_i_s = "q0";
-    string f_i_s[] = {"qf"};
-
-    turing_machine * tm = new_turing_machine(states, 14, input_alph, 2, tape_alph, 3, i_i_s, f_i_s, 1, 'B');
-
-    if ( tm == NULL){
-        printf("Error while creating turing machine\n");
-        return -1;
-    }
-    
-    add_transition_tm(tm, "q0", "q1", '1', 'B', RIGHT);
-    add_transition_tm(tm, "q1", "q1", '1', '1', RIGHT);
-    add_transition_tm(tm, "q1", "q2", '*', '*', RIGHT);
-    add_transition_tm(tm, "q2", "q3", '1', 'X', RIGHT);
-    add_transition_tm(tm, "q3", "q3", '1', '1', RIGHT);
-    add_transition_tm(tm, "q3", "q4", 'B', 'B', RIGHT);
-    add_transition_tm(tm, "q4", "q4", '1', '1', RIGHT);
-    add_transition_tm(tm, "q4", "q5", 'B', '1', LEFT);
-    add_transition_tm(tm, "q5", "q5", '1', '1', LEFT);
-    add_transition_tm(tm, "q5", "q6", 'B', 'B', LEFT);
-    add_transition_tm(tm, "q6", "q7", '1', '1', LEFT);
-    add_transition_tm(tm, "q7", "q7", '1', '1', LEFT);
-    add_transition_tm(tm, "q7", "q2", 'X', '1', RIGHT);
-    add_transition_tm(tm, "q6", "q8", 'X', '1', LEFT);
-    add_transition_tm(tm, "q8", "q8", '1', '1', LEFT);
-    add_transition_tm(tm, "q8", "q9", '*', '*', LEFT);
-    add_transition_tm(tm, "q9", "q10", '1', '1', LEFT);
-    add_transition_tm(tm, "q10", "q10", '1', '1', LEFT);
-    add_transition_tm(tm, "q10", "q0", 'B', 'B', RIGHT);
-    add_transition_tm(tm, "q9", "q11", 'B', 'B', RIGHT);
-    add_transition_tm(tm, "q11", "q12", '*', '*', RIGHT);
-    add_transition_tm(tm, "q12", "q12", '1', '1', RIGHT);
-    add_transition_tm(tm, "q12", "qf", 'B', 'B', RIGHT);
-    
-
-   
-    string states[] = {"q0","q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12","qf"};
-    char input_alph[] = {'1', '*'};
-    char tape_alph[] = {'1', '*', 'B'};
-    string i_i_s = "q0";
-    string f_i_s[] = {"qf"};
-
-    turing_machine * tm = new_turing_machine(states, 14, input_alph, 2, tape_alph, 3, i_i_s, f_i_s, 1, 'B');
-
-    if ( tm == NULL){
-        printf("Error while creating turing machine\n");
-        return -1;
-    }
-
-    add_transition_tm(tm, "q0", "q1", '1', 'B', RIGHT);
-    add_transition_tm(tm, "q1", "q1", '1', '1', RIGHT);
-    add_transition_tm(tm, "q1", "q2", '*', '*', RIGHT);
-    add_transition_tm(tm, "q2", "q2", '1', '1', RIGHT);
-    add_transition_tm(tm, "q2", "q3", 'B', '*', RIGHT);
-    add_transition_tm(tm, "q2", "q3", '*', '*', RIGHT);
-    add_transition_tm(tm, "q3", "q3", '1', '1', RIGHT);
-    add_transition_tm(tm, "q3", "q4", 'B', '1', LEFT);
-    add_transition_tm(tm, "q4", "q4", '1', '1', LEFT);
-    add_transition_tm(tm, "q4", "q5", '*', '*', LEFT);
-    add_transition_tm(tm, "q5", "q5", '1', '1', LEFT);
-    add_transition_tm(tm, "q5", "q6", '*', '*', LEFT);
-    add_transition_tm(tm, "q6", "q6", '1', '1', LEFT);
-    add_transition_tm(tm, "q6", "q0", 'B', 'B', RIGHT);
-
-    add_transition_tm(tm, "q0", "q7", '*', '*', RIGHT);
-    add_transition_tm(tm, "q7", "q8", '1', 'B', RIGHT);
-    add_transition_tm(tm, "q8", "q8", '1', '1', RIGHT);
-    add_transition_tm(tm, "q8", "q9", '*', '*', RIGHT);
-    add_transition_tm(tm, "q9", "q9", '1', '1', RIGHT);
-    add_transition_tm(tm, "q9", "q10", 'B', '1', LEFT);
-    add_transition_tm(tm, "q10", "q10", '1', '1', LEFT);
-    add_transition_tm(tm, "q10", "q11", '*', '*', LEFT);
-    add_transition_tm(tm, "q11", "q11", '1', '1', LEFT);
-    add_transition_tm(tm, "q11", "q7", 'B', 'B', RIGHT);
-
-
-    add_transition_tm(tm, "q7", "q12", '*', '*', LEFT);
-    add_transition_tm(tm, "q12", "q12", '1', 'B', LEFT);
-    add_transition_tm(tm, "q12", "q12", '*', '*', LEFT);
-    add_transition_tm(tm, "q12", "qf", 'B', 'B', RIGHT);
-
-    print_tm(tm);
-
-    start_tm(tm, "111*1111");
-
-    while ( !is_finished_tm(tm) ){
-        int n = next_tm(tm);
-        if ( n == -1){
-            printf("Iteration error tm\n");
-            break;
-        }
-    }
-
-
-    return 0;
-}
-*/
 turing_machine * new_turing_machine(string * states, int states_size, char * input_alphabet, int input_alphabet_size, char * tape_alphabet, int tape_alphabet_size, string initial_input_state, string * final_states, int final_states_size, char blank){
     
     if ( states_size == 0){
@@ -364,7 +261,7 @@ int start_tm(turing_machine * turing_machine, string input_string){
         turing_machine->current_iteration = malloc(sizeof(tm_iteration));
         if ( turing_machine->current_iteration == NULL){
             printf("Error while initializing iteration\n");
-            return 0;
+            return -1;
         }
 
         turing_machine->current_iteration->current_state = turing_machine->initial_input_state;
@@ -373,7 +270,7 @@ int start_tm(turing_machine * turing_machine, string input_string){
         if ( turing_machine->current_iteration->list == NULL){
             printf("Error while initializing tape\n");
             free(turing_machine->current_iteration);
-            return 0;
+            return -1;
         }
 
         //Write input string into the turing machine, set current at the start of said string
@@ -382,14 +279,14 @@ int start_tm(turing_machine * turing_machine, string input_string){
             printf("Error while writing input string to the tape\n");
             free(turing_machine->current_iteration->list);
             free(turing_machine->current_iteration);
-            return 0;
+            return -1;
         }
         turing_machine->current_iteration->input_string = malloc(strlen(input_string));
         if ( turing_machine->current_iteration->input_string == NULL){
             printf("Error while initializing iteration\n");
             free(turing_machine->current_iteration->list);
             free(turing_machine->current_iteration);
-            return 0;
+            return -1;
         }
         strcpy(turing_machine->current_iteration->input_string, input_string);
         turing_machine->started = 1;
@@ -434,7 +331,6 @@ int next_tm(turing_machine * turing_machine){
     int current_state = turing_machine->current_iteration->current_state;
     char condition = turing_machine->current_iteration->list->list[turing_machine->current_iteration->list->current];
 
-    //print_current_configuration(turing_machine);
     int transition = get_tm_transition(turing_machine, current_state, condition);
     if ( transition == -1){
         printf("No transition available, turing machine cannot end\n");
@@ -442,8 +338,6 @@ int next_tm(turing_machine * turing_machine){
         return -1;
     }
     
-    //printf("current state: %s condition: %c replacement: %c\n", turing_machine->states[current_state], condition, turing_machine->tape_alphabet[turing_machine->transition[transition]->tape_replacement] );
-
     //Cambiar el estado actual
     turing_machine->current_iteration->current_state = turing_machine->transition[transition]->state_to;
     
@@ -495,8 +389,8 @@ int is_final_tm_state(turing_machine * tm, string state){
 int execute_tm(turing_machine * turing_machine, string input_string){
     int res = 0;
     int aux = start_tm(turing_machine, input_string);
-    if ( aux == 0)
-        return 0;
+    if ( aux != 1)
+        return aux;
     while ( res != 1){
         res = next_tm(turing_machine);
         if ( res == -1)
