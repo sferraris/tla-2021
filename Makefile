@@ -5,4 +5,4 @@ all:
 	clang -o lex lex.yy.c y.tab.c lex.c  
 	rm lex.yy.c y.tab.c y.tab.h
 clean:
-	rm lex output.c out
+	rm -f output.c out

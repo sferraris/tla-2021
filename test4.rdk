@@ -1,5 +1,3 @@
-#define NULL 0
-
 main()
 {
     // Este automata acepta el lenguaje en el que cantidad de letras de x es igual a la cantidad de letras de y

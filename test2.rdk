@@ -1,5 +1,3 @@
-#define NULL 0
-
 main()
 {
     // Este automata acepta L = { x^n y x^n / n >= 0 } por estado final

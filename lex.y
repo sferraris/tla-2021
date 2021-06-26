@@ -647,11 +647,12 @@ void yyerror(char * s) {
 
 int main(int argc, char ** argv) {
 
+    addVariable("NULL", DEFINE, &first);
     if(argc != 2){
         printf("Needs a file\n");
         return 0;
     }
-    char aux[strlen(argv[1])]; 
+    char aux[strlen(argv[1])];
     strcpy(aux, argv[1]);
     char* token = strtok(aux, ".");
     while (token != NULL) {

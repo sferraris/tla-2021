@@ -1,5 +1,3 @@
-#define NULL 0
-
 main()
 {
     // Esta maquina de turing recibe un string en unario de dos parametros (x, y) 
