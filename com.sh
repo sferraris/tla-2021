@@ -3,6 +3,6 @@
 make all
 ./lex $1
 if [ $? -gt 0 ]
-then gcc -o out output.c automaton.c stack.c doublelist.c turingmachine.c
+then clang -o out output.c automaton.c stack.c turingmachine.c doublelist.c
 fi
 rm lex output.c
