@@ -141,5 +141,6 @@ int write_string(doublelist * pt, string s){
         if ( move(pt, LEFT) )
             return -1;
     }
+    return 0;
         
 }

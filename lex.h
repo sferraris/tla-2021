@@ -30,6 +30,12 @@ struct variables{
     struct variables * next;
 };
 
+struct memory{
+    char * mem;
+    struct memory * next;
+};
+
+
 int checkVariable(char * var, struct variables * first);
 
 int checkVariableWithType(char * var, struct variables * first, enum types type);
@@ -37,5 +43,11 @@ int checkVariableWithType(char * var, struct variables * first, enum types type)
 int addVariable(char * var, enum types type, struct variables ** first);
 
 int is_special_type(char * var, struct variables * first);
+
+int save_memory(char * mem, struct memory ** mems);
+
+void free_memory(struct memory * mems);
+
+void free_variables(struct variables * var);
 
 #endif

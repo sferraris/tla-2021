@@ -71,15 +71,18 @@ void yyerror(char *);
 "<=" { yylval.ival=0;return LE;}
 "!=" { yylval.ival=0;return NE;}
 
-"LAMBDA" {yylval.strval=0;return LAMBDA2;}
+"//"[a-zA-Z0-9]*([\n]|[\r\n]) ;
+
+"LAMBDA" {yylval.strval=strdup(yytext);return LAMBDA2;}
 "LEFT" {yylval.strval=strdup(yytext);return MTS;}
 "RIGHT" {yylval.strval=strdup(yytext);return MTS;}
+"end;"  {yylval.ival = 0; return END;}
 
-[a-z]+ {
+[a-z_]+ {
     yylval.strval =strdup(yytext);
     return VARIABLE;
     }
-[A-Z]+ {
+[A-Z_]+ {
 yylval.strval =strdup(yytext);
 return DEF_VARIABLE;
 }

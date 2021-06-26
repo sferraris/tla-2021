@@ -92,3 +92,42 @@ int is_special_type(char * var, struct variables * first){
     return 0;
 
 }
+
+int save_memory(char * new_memory, struct memory ** mems){
+
+     if(*mems == 0){
+         *mems = malloc(sizeof(struct memory));
+        (*mems)->mem = new_memory;
+        (*mems)->next = 0;
+        return 1;
+    }
+    struct memory * aux = *mems;
+    while(aux->next !=0){
+        aux=aux->next;
+  
+    }
+    aux->next = malloc(sizeof(struct memory));
+    aux = aux->next;
+    aux->mem = new_memory;
+    aux->next = 0;
+
+
+    return 1;
+}
+
+void free_memory(struct memory * mems){
+    if(mems == 0){
+        return;
+    }
+    free_memory(mems->next);
+    free(mems->mem);
+    free(mems);
+}
+void free_variables(struct variables * var){
+    if(var == 0){
+        return;
+    }
+    free_variables(var->next);
+    free(var->var);
+    free(var);
+}
